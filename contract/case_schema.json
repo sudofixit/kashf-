@@ -46,6 +46,23 @@
     "recommendation": "string (Mistral-generated) — recommended action and rationale.",
     "top_fix": "string — the chosen candidate fix."
   },
+  "appraisal": {
+    "_purpose": "OPTIONAL, additive. Indicative benefit-cost of each tested fix — answers whether it is worth BUILDING infrastructure vs a cheaper operational fix. Present when computed; the frontend renders it when the block exists.",
+    "method_label": "string — shown verbatim to flag the appraisal is indicative, not RTA-costed.",
+    "verdict": "string — plain-language build-vs-operate conclusion.",
+    "options": [
+      {
+        "fix": "string — matches a simulate candidate.",
+        "capex_aed": "int — capital cost ESTIMATE (labelled, not RTA-costed).",
+        "bcr": "float — benefit-cost ratio (benefit = value-of-time x annual vehicle-hours saved, over a 15-yr horizon).",
+        "payback_years": "float | null — simple payback period.",
+        "annual_benefit_aed": "int — monetised annual delay + recovered-demand benefit.",
+        "annual_vehhours_saved": "int — annual vehicle-hours of delay saved.",
+        "verdict": "'strongly justified' | 'justified' | 'marginal' | 'not justified'.",
+        "is_infrastructure": "bool — true for build options (lane, grade-separation), false for operational."
+      }
+    ]
+  },
   "flow_animation": {
     "before": {"density": "string — 'low'|'medium'|'high'|'gridlock'", "speed_factor": "float — 0-1 multiplier of free-flow speed"},
     "after": {"density": "string", "speed_factor": "float"}

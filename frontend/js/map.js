@@ -45,7 +45,22 @@
       if (!tokenValid()) { warn("Add your Mapbox token to js/config.js to enable the map. Panel data still works."); return resolve({ ok: false }); }
       tokenOk = true;
       mapboxgl.accessToken = window.KASHF_CONFIG.mapboxToken;
-      map = new mapboxgl.Map({ container: "map", style: "mapbox://styles/mapbox/dark-v11",
+      // Mapbox tokens are normally URL-restricted to the deploy domain, so on localhost the
+      // vector tiles 403 and the map goes grey. Fall back to token-free dark raster tiles for
+      // local preview; the deployed (GitHub Pages) build uses the full Mapbox vector style.
+      const isLocal = /^(localhost|127\.0\.0\.1|0\.0\.0\.0|\[::1\])$/.test(location.hostname);
+      const localStyle = {
+        version: 8,
+        glyphs: "https://fonts.openmaptiles.org/{fontstack}/{range}.pbf",
+        sources: { basemap: { type: "raster", tileSize: 256,
+          tiles: ["https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png",
+                  "https://b.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png",
+                  "https://c.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png"],
+          attribution: "© OpenStreetMap © CARTO" } },
+        layers: [{ id: "basemap", type: "raster", source: "basemap" }]
+      };
+      map = new mapboxgl.Map({ container: "map",
+        style: isLocal ? localStyle : "mapbox://styles/mapbox/dark-v11",
         center: [55.31, 25.24], zoom: 11.3, pitch: 0, attributionControl: false });
       // If the style/WebGL never loads (headless, blocked GL, network), resolve anyway so the
       // rest of the app is never blocked.
@@ -142,7 +157,7 @@
       map.getCanvas().style.cursor = "pointer";
       const p = e.features[0].properties;
       popup.setLngLat(e.features[0].geometry.coordinates).setHTML(
-        `<div class="map-tooltip"><div class="tt-id">${p.location_id}</div><div class="tt-area">${p.area}</div>
+        `<div class="map-tooltip"><div class="tt-id">${(window.KashfTranslate ? window.KashfTranslate.name(p.location_id) : p.location_id)}</div><div class="tt-area">${p.area}</div>
          <div class="tt-row">% hours at gridlock <b>${p.los_f_pct}</b></div>
          <div class="tt-row">unmet demand <b>${p.demand_gap_vph}</b></div></div>`).addTo(map);
     });
@@ -152,23 +167,26 @@
     D.JUNCTIONS.forEach((j) => {
       const el = document.createElement("div");
       el.className = "jct-marker" + (D.PULSE_JUNCTIONS.includes(j.id) ? " pulse" : "");
-      el.title = `${j.name} — ${j.control}`;
+      el.title = window.KashfTranslate ? window.KashfTranslate.text(`${j.name} — ${j.control}`) : `${j.name} — ${j.control}`;
       junctionMarkers.push(new mapboxgl.Marker({ element: el }).setLngLat(j.coords).addTo(map));
     });
   }
 
   // ---------- segments (all 5 verified) ----------
   function buildSegments(cases) {
-    const add = (id, caseId, anchors, vc, color) => { if (Array.isArray(anchors)) segments.push({ id, caseId, anchors, vc, color }); };
+    // bakedGeom: pre-fetched OSRM road geometry (array of [lng,lat]) baked into the contract JSON.
+    // When present it is used in ensureRoute() instead of the Mapbox Directions API (which is
+    // URL-restricted on localhost). Falls back to the two-point schematic line when absent.
+    const add = (id, caseId, anchors, vc, color, bakedGeom) => { if (Array.isArray(anchors)) segments.push({ id, caseId, anchors, vc, color, bakedGeom: bakedGeom || null }); };
     const c1 = cases["case_1_al_mamzar"], c2 = cases["case_2_szr_defence"],
           c3 = cases["case_3_storm"], c5 = cases["case_5_garhoud_no_signal"];
-    if (c1) add("case_1_al_mamzar", "case_1_al_mamzar", c1.map.route_anchors, c1.triage.mean_vc, c1.map.severity_color);
+    if (c1) add("case_1_al_mamzar", "case_1_al_mamzar", c1.map.route_anchors, c1.triage.mean_vc, c1.map.severity_color, c1.map.route_geometry);
     if (c2) {
-      add("case_2_main", "case_2_szr_defence", c2.map.route_anchors, c2.triage.mean_vc, c2.map.severity_color);
-      if (c2.secondary_corridor) add("case_2_sec", "case_2_szr_defence", c2.secondary_corridor.route_anchors, c2.secondary_corridor.mean_vc, c2.map.severity_color);
+      add("case_2_main", "case_2_szr_defence", c2.map.route_anchors, c2.triage.mean_vc, c2.map.severity_color, c2.map.route_geometry);
+      if (c2.secondary_corridor) add("case_2_sec", "case_2_szr_defence", c2.secondary_corridor.route_anchors, c2.secondary_corridor.mean_vc, c2.map.severity_color, c2.secondary_corridor.route_geometry);
     }
-    if (c3) add("case_3_storm", "case_3_storm", c3.map.route_anchors, c3.triage.mean_vc, c3.map.severity_color);
-    if (c5) add("case_5_garhoud_no_signal", "case_5_garhoud_no_signal", c5.map.route_anchors, c5.triage.mean_vc, c5.map.severity_color);
+    if (c3) add("case_3_storm", "case_3_storm", c3.map.route_anchors, c3.triage.mean_vc, c3.map.severity_color, c3.map.route_geometry);
+    if (c5) add("case_5_garhoud_no_signal", "case_5_garhoud_no_signal", c5.map.route_anchors, c5.triage.mean_vc, c5.map.severity_color, c5.map.route_geometry);
   }
 
   async function fetchRoute(key, a, b) {
@@ -188,8 +206,15 @@
 
   async function ensureRoute(s) {
     if (!s || s.coords) return s;
-    const geo = await fetchRoute(s.id, s.anchors[0], s.anchors[1]);
-    s.coords = geo.coords; s.fallback = geo.fallback;
+    // Prefer baked OSRM geometry (written by scripts/bake_routes.mjs) — works on localhost
+    // without a URL-restricted Mapbox token. Falls back to the live Directions API, and if
+    // that also fails, to a two-point schematic line (fallback: true triggers the map note).
+    if (s.bakedGeom && s.bakedGeom.length >= 2) {
+      s.coords = s.bakedGeom; s.fallback = false;
+    } else {
+      const geo = await fetchRoute(s.id, s.anchors[0], s.anchors[1]);
+      s.coords = geo.coords; s.fallback = geo.fallback;
+    }
     if (hasTurf()) { s.tline = turf.lineString(s.coords); s.lenKm = Math.max(turf.length(s.tline, { units: "kilometers" }), 0.001); }
     const cum = [0]; let tot = 0;
     for (let i = 1; i < s.coords.length; i++) { tot += Math.hypot(s.coords[i][0] - s.coords[i - 1][0], s.coords[i][1] - s.coords[i - 1][1]); cum.push(tot); }

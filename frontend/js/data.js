@@ -51,7 +51,7 @@
   // Bottom strip — the three permanent honesty disclosures, from config not HTML.
   const DISCLOSURE_LINE =
     "Data: RTA challenge dataset 2023–2025 (26,304 hrs × 18 corridors) · " +
-    "Forecast & simulation outputs are indicative · Display routes adjusted to road geometry";
+    "Forecast and simulation outputs are indicative · Display routes follow road geometry";
 
   // Mandatory permanent disclosure for the Mapbox live-traffic base layer (Part A1).
   const TRAFFIC_DISCLOSURE =
@@ -60,9 +60,9 @@
   // Metric cards: plain-English line (from contract.plain[plainKey]) is primary; the
   // technical value + unit renders muted beneath it (Part D2).
   const METRICS = [
-    { key: "los_f_pct", plainKey: "los_f", tech: (v) => `${v}% hours at LOS F` },
-    { key: "demand_gap_vph", plainKey: "gap", tech: (v) => `${v} veh/hr unmet demand` },
-    { key: "mean_vc", plainKey: "vc", tech: (v) => `${v} volume/capacity` }
+    { key: "los_f_pct", plainKey: "los_f", tech: (v) => `${v}% of hours gridlocked (LOS F)` },
+    { key: "demand_gap_vph", plainKey: "gap", tech: (v) => `${v} veh/hr can't get through` },
+    { key: "mean_vc", plainKey: "vc", tech: (v) => `${Math.round(v * 100)}% of capacity used (avg)` }
   ];
 
   // Diagnosis badge styling by type.

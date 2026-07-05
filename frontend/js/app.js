@@ -20,6 +20,13 @@
   }
   const SEV_CLASS = { red: "sev-red", amber: "sev-amber", green: "sev-green" };
 
+  // Translation is display-only, via KashfTranslate (js/translations.js). Fall back to
+  // identity if it ever fails to load, so rendering never breaks.
+  const T = window.KashfTranslate ||
+    { text: (s) => String(s), name: (c) => c, term: (s) => s, diag: (t) => t };
+  function H(s) { return esc(T.text(s)); }           // humanize codes + terms, then escape
+  function nameOf(code) { return T.name(code); }
+
   // ---- boot ----------------------------------------------------------------
   async function boot() {
     document.getElementById("bottom-strip").textContent = D.DISCLOSURE_LINE;
@@ -103,6 +110,9 @@
     state.activeId = caseId;
     state.flowState = "before";
 
+    // Tell the Ask Kashf drawer which case is now active (it resets its chat).
+    document.dispatchEvent(new CustomEvent("kashf:case", { detail: caseData }));
+
     document.querySelectorAll(".tab").forEach((t) =>
       t.classList.toggle("active", t.dataset.caseId === caseId));
     setStatusPill(caseData);
@@ -131,10 +141,12 @@
       parts.push(renderOverview(c));
       parts.push(renderTable(c));
     } else {
+      if (c.context) parts.push(renderContext(c));
       parts.push(renderMetricRow(c));
       parts.push(renderDiagnosis(c));
       const hasFixes = c.simulate && Array.isArray(c.simulate.candidates) && c.simulate.candidates.length > 0;
       if (hasFixes) parts.push(renderFixes(c));
+      if (c.appraisal && Array.isArray(c.appraisal.options)) parts.push(renderAppraisal(c));
       parts.push(renderReco(c));
       // Cases with a fix get a Before/After toggle; the storm gets a "Show response" toggle.
       const hasToggle = hasFixes || c.case_id === "case_3_storm";
@@ -152,7 +164,19 @@
       const b = D.BADGES[c.diagnosis.type];
       badge = b ? `<span class="badge ${b.cls}">${esc(b.text)}</span>` : "";
     }
-    return `<div class="case-header"><h1 class="case-title">${esc(c.title)}</h1>${badge}</div>`;
+    return `<div class="case-header"><h1 class="case-title">${H(c.title)}</h1>${badge}</div>`;
+  }
+
+  function renderContext(c) {
+    const x = c.context;
+    if (!x || x.text === undefined) return "";
+    const src = x.source_url
+      ? `<a href="${esc(x.source_url)}" target="_blank" rel="noopener">${esc(x.source || "source")}</a>`
+      : esc(x.source || "");
+    return `<div class="context-note">
+      <div class="context-label">${esc(x.label || "Context")}</div>
+      <p>${H(x.text)}</p>
+      ${src ? `<div class="context-src">Source: ${src}</div>` : ""}</div>`;
   }
 
   function renderMetricRow(c) {
@@ -165,7 +189,7 @@
       if (primary === undefined) throw new Error("plain." + m.plainKey + " missing");
       const qual = isStorm ? `<span class="m-qual"> · storm-day</span>` : "";
       // Plain-English primary; technical value muted beneath (Part D2).
-      return `<div class="metric"><div class="m-plain">${esc(primary)}</div>
+      return `<div class="metric"><div class="m-plain">${H(primary)}</div>
                 <div class="m-tech tabular">${esc(m.tech(val))}${qual}</div></div>`;
     }).join("");
     return `<div class="metric-row">${cards}</div>`;
@@ -176,12 +200,12 @@
     if (!dg || dg.summary === undefined) throw new Error("diagnosis.summary missing");
     const sevClass = SEV_CLASS[c.map.severity_color] || "sev-accent";
     const evClass = c.diagnosis.type === "WEATHER_INCIDENT" ? "sev-accent" : sevClass;
-    const evidence = dg.evidence.map((e) => `<div class="ev ${evClass}">${esc(e)}</div>`).join("");
+    const evidence = dg.evidence.map((e) => `<div class="ev ${evClass}">${H(e)}</div>`).join("");
     const review = dg.human_review_required
       ? `<span class="review-pill">Human review required</span>` : "";
     return `<div class="card">
       <div class="section-label">Diagnosis</div>
-      <p class="diag-summary">${esc(dg.summary)}</p>
+      <p class="diag-summary">${H(dg.summary)}</p>
       <div class="evidence">${evidence}</div>
       <div class="confidence">
         <div class="conf-track"><div class="conf-fill" style="width:${Number(dg.confidence_pct)}%"></div></div>
@@ -208,21 +232,21 @@
       const rec = fixIsRecommended(c, cand);
       let metrics = "", delta = "", note = "";
       if (notEst) {
-        note = `<div class="not-est-note">Not estimable with this model</div>`;
+        note = `<div class="not-est-note">No model estimate available</div>`;
       } else {
         const b = cand.before, a = cand.after;
         const dPct = Math.round((a.delay_s - b.delay_s) / b.delay_s * 100);
         const cls = dPct < 0 ? "good" : dPct > 0 ? "bad" : "neutral";
         delta = `<span class="fix-delta ${cls} tabular">${dPct > 0 ? "+" : ""}${dPct}% delay</span>`;
         metrics = `<div class="fix-metrics tabular">
-            <span>vc <b>${esc(b.vc)}</b><span class="arrow">→</span><b>${esc(a.vc)}</b></span>
-            <span>delay <b>${esc(b.delay_s)}s</b><span class="arrow">→</span><b>${esc(a.delay_s)}s</b></span>
+            <span title="Degree of saturation: share of junction capacity in use. Lower is better.">saturation <b>${esc(b.vc)}</b><span class="arrow">→</span><b>${esc(a.vc)}</b></span>
+            <span title="Average seconds each vehicle waits at the junction">delay <b>${esc(b.delay_s)}s</b><span class="arrow">→</span><b>${esc(a.delay_s)}s</b></span>
           </div>`;
       }
       return `<div class="fix ${rec ? "recommended" : ""} ${notEst ? "not-estimable" : ""}">
         <div class="fix-head">
-          <span class="fix-name">${esc(cand.fix)}</span>
-          ${rec ? '<span class="fix-rec-label">Recommended</span>' : delta}
+          <span class="fix-name">${H(cand.fix)}</span>
+          ${rec ? '<span class="fix-rec-label">Priority fix</span>' : delta}
         </div>
         ${metrics}${note}
         <div class="fix-scores">
@@ -231,26 +255,54 @@
         </div></div>`;
     }).join("");
     const verdict = (c.plain && c.plain.verdict_after)
-      ? `<div class="verdict-after">${esc(c.plain.verdict_after)}</div>` : "";
+      ? `<div class="verdict-after">${H(c.plain.verdict_after)}</div>` : "";
     const foot = c.simulate.method_label
       ? `<div class="method-footnote">${esc(c.simulate.method_label)}</div>` : "";
-    return `<div class="card"><div class="section-label">Tested fixes</div>${rows}${verdict}${foot}</div>`;
+    return `<div class="card"><div class="section-label">Modelled fixes</div>${rows}${verdict}${foot}</div>`;
+  }
+
+  // ---- economic appraisal: is it worth building? --------------------------
+  function payLabel(y) {
+    if (y === null || y === undefined) return "—";
+    return y < 1 ? Math.round(y * 12) + " mo" : y + " yr";
+  }
+
+  function renderAppraisal(c) {
+    const a = c.appraisal;
+    if (!a || !Array.isArray(a.options)) return "";
+    const rows = a.options.map((o) => {
+      const cls = o.verdict === "not justified" ? "appr-no"
+        : Number(o.bcr) >= 4 ? "appr-yes" : "appr-mid";
+      const kind = o.is_infrastructure ? "capital" : "operating";
+      return `<div class="appr-row ${cls}">
+        <div class="appr-fix">${H(o.fix)}<span class="appr-kind">${kind}</span></div>
+        <div class="appr-nums tabular">
+          <span class="appr-bcr" title="Benefit-cost ratio: return per dirham spent. BCR above 1.0 is economically viable.">${esc(o.bcr)}× return</span>
+          <span class="appr-pay">${esc(payLabel(o.payback_years))}</span>
+          <span class="appr-verdict">${H(o.verdict)}</span>
+        </div></div>`;
+    }).join("");
+    const foot = a.method_label ? `<div class="method-footnote">${esc(a.method_label)}</div>` : "";
+    return `<div class="card appraisal">
+      <div class="section-label">Economic appraisal</div>
+      <p class="appr-verdict-line">${H(a.verdict)}</p>
+      <div class="appr-table">${rows}</div>${foot}</div>`;
   }
 
   function renderReco(c) {
     if (!c.rank || c.rank.recommendation === undefined) throw new Error("rank.recommendation missing");
     return `<div class="card reco"><div class="section-label">Recommendation</div>
-      <p class="reco-text">${esc(c.rank.recommendation)}</p></div>`;
+      <p class="reco-text">${H(c.rank.recommendation)}</p></div>`;
   }
 
   function toggleHint(c, s) {
     if (c.case_id === "case_3_storm") {
       return s === "after"
-        ? "Operational response — patrols and diversions (no engineering fix applies here)."
-        : "Storm-day flow across the bridge — click 'Show response' for the actions.";
+        ? "Operational response: patrols and diversions. No engineering fix applies."
+        : "Storm-day flow across the bridge. Select 'Show response' for the operational actions.";
     }
     const blk = (c.flow_animation || {})[s] || {};
-    return `flow: ${blk.density || "—"} density, ${blk.speed_factor}× free-flow speed`;
+    return `Density: ${blk.density || "—"}, speed ${blk.speed_factor}× free-flow`;
   }
 
   function renderToggle(c) {
@@ -258,7 +310,7 @@
     const l0 = storm ? "Storm view" : "Before conditions";
     const l1 = storm ? "Show response" : "After top fix";
     return `<div class="card">
-      <div class="section-label">${storm ? "Scenario" : "Scenario flow"}</div>
+      <div class="section-label">${storm ? "Scenario" : "Flow comparison"}</div>
       <div class="toggle-wrap">
         <div class="toggle" role="group" aria-label="${storm ? "Storm / response" : "Before / after"}">
           <button type="button" data-flow="before" class="active">${esc(l0)}</button>
@@ -286,8 +338,8 @@
   // ---- citywide overview + table -------------------------------------------
   function renderOverview(c) {
     if (c.narrative === undefined) throw new Error("narrative missing");
-    return `<div class="card"><div class="section-label">Citywide summary</div>
-      <p class="overview-text">${esc(c.narrative)}</p></div>`;
+    return `<div class="card"><div class="section-label">Network overview</div>
+      <p class="overview-text">${H(c.narrative)}</p></div>`;
   }
 
   function renderTable(c) {
@@ -295,17 +347,17 @@
     const rows = c.triage_table.slice().sort((x, y) =>
       dir === "desc" ? y.los_f_pct - x.los_f_pct : x.los_f_pct - y.los_f_pct);
     const body = rows.map((r) => `<tr>
-        <td class="l"><span class="sev-dot ${esc(r.severity_color)}"></span>${esc(r.location_id)}</td>
+        <td class="l"><span class="sev-dot ${esc(r.severity_color)}"></span>${esc(nameOf(r.location_id))}</td>
         <td class="l">${esc(r.area)}</td>
         <td class="val tabular">${esc(r.los_f_pct)}</td>
         <td class="val tabular">${esc(r.demand_gap_vph)}</td>
       </tr>`).join("");
     const caret = dir === "desc" ? "▾" : "▴";
-    return `<div class="card"><div class="section-label">Corridor triage — all 18</div>
+    return `<div class="card"><div class="section-label">Corridor triage: all 18</div>
       <table class="triage-table"><thead><tr>
         <th class="l">Corridor</th><th class="l">Area</th>
-        <th class="sortable" id="sort-losf">% LOS F <span class="sort-caret">${caret}</span></th>
-        <th>Gap vph</th>
+        <th class="sortable" id="sort-losf" title="Share of hours at LOS F (gridlock). The worst traffic grade.">% gridlocked <span class="sort-caret">${caret}</span></th>
+        <th title="Vehicles per hour that want the road but can't get through">Unmet demand</th>
       </tr></thead><tbody>${body}</tbody></table></div>`;
   }
 
@@ -324,16 +376,19 @@
   // ---- error surfaces ------------------------------------------------------
   function showErrorBanner(errors) {
     const el = document.getElementById("error-banner");
-    const items = errors.map((e) => `<li>${esc(e.file)} — ${esc(e.field)}: ${esc(e.msg)}</li>`).join("");
-    el.innerHTML = `Contract validation issues (${errors.length}). Affected cases may be incomplete:<ul>${items}</ul>`;
+    const items = errors.map((e) => `<li>${esc(e.file)}, ${esc(e.field)}: ${esc(e.msg)}</li>`).join("");
+    el.innerHTML = `Data contract errors (${errors.length}). Affected cases may be incomplete:<ul>${items}</ul>`;
     el.hidden = false;
   }
 
   function showRenderError(caseData, err) {
     const el = document.getElementById("error-banner");
-    el.innerHTML = `Render error in ${esc(caseData && caseData.case_id)} — ${esc(err && err.message)}`;
+    el.innerHTML = `Render error in ${esc(caseData && caseData.case_id)}: ${esc(err && err.message)}`;
     el.hidden = false;
   }
+
+  // Minimal surface for the Ask Kashf drawer (js/chat.js).
+  window.KashfApp = { activeCase: () => state.cases[state.activeId] };
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
   else boot();
