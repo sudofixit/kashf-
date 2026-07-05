@@ -157,7 +157,7 @@
       map.getCanvas().style.cursor = "pointer";
       const p = e.features[0].properties;
       popup.setLngLat(e.features[0].geometry.coordinates).setHTML(
-        `<div class="map-tooltip"><div class="tt-id">${(window.KashfTranslate ? window.KashfTranslate.name(p.location_id) : p.location_id)} <span class="tt-code">(${p.location_id})</span></div><div class="tt-area">${p.area}</div>
+        `<div class="map-tooltip"><div class="tt-id">${(window.KashfTranslate ? window.KashfTranslate.name(p.location_id) : p.location_id)}</div><div class="tt-area">${p.area}</div>
          <div class="tt-row">% hours at gridlock <b>${p.los_f_pct}</b></div>
          <div class="tt-row">unmet demand <b>${p.demand_gap_vph}</b></div></div>`).addTo(map);
     });

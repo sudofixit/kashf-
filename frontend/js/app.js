@@ -26,12 +26,6 @@
     { text: (s) => String(s), name: (c) => c, term: (s) => s, diag: (t) => t };
   function H(s) { return esc(T.text(s)); }           // humanize codes + terms, then escape
   function nameOf(code) { return T.name(code); }
-  // Primary label convention: plain name + the technical id shown small/muted, once.
-  function nameWithCode(code) {
-    const n = T.name(code);
-    return n === code ? esc(code)
-      : `${esc(n)} <span class="code-ref">(${esc(code)})</span>`;
-  }
 
   // ---- boot ----------------------------------------------------------------
   async function boot() {
@@ -170,7 +164,7 @@
       const b = D.BADGES[c.diagnosis.type];
       badge = b ? `<span class="badge ${b.cls}">${esc(b.text)}</span>` : "";
     }
-    return `<div class="case-header"><h1 class="case-title">${esc(c.title)}</h1>${badge}</div>`;
+    return `<div class="case-header"><h1 class="case-title">${H(c.title)}</h1>${badge}</div>`;
   }
 
   function renderContext(c) {
@@ -195,7 +189,7 @@
       if (primary === undefined) throw new Error("plain." + m.plainKey + " missing");
       const qual = isStorm ? `<span class="m-qual"> · storm-day</span>` : "";
       // Plain-English primary; technical value muted beneath (Part D2).
-      return `<div class="metric"><div class="m-plain">${esc(primary)}</div>
+      return `<div class="metric"><div class="m-plain">${H(primary)}</div>
                 <div class="m-tech tabular">${esc(m.tech(val))}${qual}</div></div>`;
     }).join("");
     return `<div class="metric-row">${cards}</div>`;
@@ -261,7 +255,7 @@
         </div></div>`;
     }).join("");
     const verdict = (c.plain && c.plain.verdict_after)
-      ? `<div class="verdict-after">${esc(c.plain.verdict_after)}</div>` : "";
+      ? `<div class="verdict-after">${H(c.plain.verdict_after)}</div>` : "";
     const foot = c.simulate.method_label
       ? `<div class="method-footnote">${esc(c.simulate.method_label)}</div>` : "";
     return `<div class="card"><div class="section-label">Modelled fixes</div>${rows}${verdict}${foot}</div>`;
@@ -285,7 +279,7 @@
         <div class="appr-nums tabular">
           <span class="appr-bcr" title="Benefit-cost ratio: return per dirham spent. BCR above 1.0 is economically viable.">${esc(o.bcr)}× return</span>
           <span class="appr-pay">${esc(payLabel(o.payback_years))}</span>
-          <span class="appr-verdict">${esc(o.verdict)}</span>
+          <span class="appr-verdict">${H(o.verdict)}</span>
         </div></div>`;
     }).join("");
     const foot = a.method_label ? `<div class="method-footnote">${esc(a.method_label)}</div>` : "";
@@ -354,7 +348,6 @@
       dir === "desc" ? y.los_f_pct - x.los_f_pct : x.los_f_pct - y.los_f_pct);
     const body = rows.map((r) => `<tr>
         <td class="l"><span class="sev-dot ${esc(r.severity_color)}"></span>${esc(nameOf(r.location_id))}</td>
-        <td class="l code-ref">${esc(r.location_id)}</td>
         <td class="l">${esc(r.area)}</td>
         <td class="val tabular">${esc(r.los_f_pct)}</td>
         <td class="val tabular">${esc(r.demand_gap_vph)}</td>
@@ -362,7 +355,7 @@
     const caret = dir === "desc" ? "▾" : "▴";
     return `<div class="card"><div class="section-label">Corridor triage: all 18</div>
       <table class="triage-table"><thead><tr>
-        <th class="l">Corridor</th><th class="l">Code</th><th class="l">Area</th>
+        <th class="l">Corridor</th><th class="l">Area</th>
         <th class="sortable" id="sort-losf" title="Share of hours at LOS F (gridlock). The worst traffic grade.">% gridlocked <span class="sort-caret">${caret}</span></th>
         <th title="Vehicles per hour that want the road but can't get through">Unmet demand</th>
       </tr></thead><tbody>${body}</tbody></table></div>`;

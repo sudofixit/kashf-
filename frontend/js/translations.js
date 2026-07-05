@@ -65,10 +65,10 @@
     "vc_ratio": "road fullness",
     "v/c ratio": "road fullness",
     "v/c": "road fullness",
-    "SCOOT-adaptive": "smart adaptive signal",
-    "SCOOT": "smart adaptive signal",
-    "Fixed-time": "fixed-timing signal",
-    "fixed-time": "fixed-timing signal"
+    "SCOOT-adaptive": "smart adaptive",
+    "SCOOT": "smart adaptive",
+    "Fixed-time": "fixed-timing",
+    "fixed-time": "fixed-timing"
   };
   const TERM_KEYS = Object.keys(TERMS).sort((a, b) => b.length - a.length);
 
