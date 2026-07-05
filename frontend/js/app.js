@@ -147,6 +147,7 @@
       parts.push(renderOverview(c));
       parts.push(renderTable(c));
     } else {
+      if (c.context) parts.push(renderContext(c));
       parts.push(renderMetricRow(c));
       parts.push(renderDiagnosis(c));
       const hasFixes = c.simulate && Array.isArray(c.simulate.candidates) && c.simulate.candidates.length > 0;
@@ -170,6 +171,18 @@
       badge = b ? `<span class="badge ${b.cls}">${esc(b.text)}</span>` : "";
     }
     return `<div class="case-header"><h1 class="case-title">${esc(c.title)}</h1>${badge}</div>`;
+  }
+
+  function renderContext(c) {
+    const x = c.context;
+    if (!x || x.text === undefined) return "";
+    const src = x.source_url
+      ? `<a href="${esc(x.source_url)}" target="_blank" rel="noopener">${esc(x.source || "source")}</a>`
+      : esc(x.source || "");
+    return `<div class="context-note">
+      <div class="context-label">${esc(x.label || "Context")}</div>
+      <p>${H(x.text)}</p>
+      ${src ? `<div class="context-src">Source: ${src}</div>` : ""}</div>`;
   }
 
   function renderMetricRow(c) {

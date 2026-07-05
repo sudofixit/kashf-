@@ -45,7 +45,22 @@
       if (!tokenValid()) { warn("Add your Mapbox token to js/config.js to enable the map. Panel data still works."); return resolve({ ok: false }); }
       tokenOk = true;
       mapboxgl.accessToken = window.KASHF_CONFIG.mapboxToken;
-      map = new mapboxgl.Map({ container: "map", style: "mapbox://styles/mapbox/dark-v11",
+      // Mapbox tokens are normally URL-restricted to the deploy domain, so on localhost the
+      // vector tiles 403 and the map goes grey. Fall back to token-free dark raster tiles for
+      // local preview; the deployed (GitHub Pages) build uses the full Mapbox vector style.
+      const isLocal = /^(localhost|127\.0\.0\.1|0\.0\.0\.0|\[::1\])$/.test(location.hostname);
+      const localStyle = {
+        version: 8,
+        glyphs: "https://fonts.openmaptiles.org/{fontstack}/{range}.pbf",
+        sources: { basemap: { type: "raster", tileSize: 256,
+          tiles: ["https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png",
+                  "https://b.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png",
+                  "https://c.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png"],
+          attribution: "© OpenStreetMap © CARTO" } },
+        layers: [{ id: "basemap", type: "raster", source: "basemap" }]
+      };
+      map = new mapboxgl.Map({ container: "map",
+        style: isLocal ? localStyle : "mapbox://styles/mapbox/dark-v11",
         center: [55.31, 25.24], zoom: 11.3, pitch: 0, attributionControl: false });
       // If the style/WebGL never loads (headless, blocked GL, network), resolve anyway so the
       // rest of the app is never blocked.

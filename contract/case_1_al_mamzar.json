@@ -2,6 +2,12 @@
   "case_id": "case_1_al_mamzar",
   "title": "Al Ittihad Road @ Al Mamzar (Dubai–Sharjah border)",
   "status": "verified",
+  "context": {
+    "label": "Real-world validation",
+    "text": "RTA reports roughly 1.2 million vehicles per day crossing from Sharjah toward Dubai. Against that scale, the 2023–2025 dataset figures below are a conservative floor on true peak demand at this border corridor — the operational case is stronger, not weaker, than the modelled numbers suggest.",
+    "source": "RTA figures, reported by Gulf News (June 2026)",
+    "source_url": "https://gulfnews.com/uae/transport/why-is-sharjah-dubai-traffic-so-bad-new-figures-reveal-whats-driving-the-congestion-1.500564247"
+  },
   "map": {
     "corridor_id": "ITT_W1",
     "junction_id": "JCT_MAMZ",

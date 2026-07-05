@@ -388,3 +388,17 @@ td.code-ref { font-family: inherit; }
 }
 .akd-foot button:disabled { opacity: .5; cursor: default; }
 @media (max-width: 560px) { #ask-kashf-drawer { width: 100%; } }
+
+/* Real-world validation callout — cited, authoritative */
+.context-note {
+  border: 1px solid var(--border); border-left: 3px solid var(--accent);
+  background: var(--bg-2); border-radius: 8px; padding: 12px 14px; margin-bottom: 14px;
+}
+.context-label {
+  font-size: 11px; letter-spacing: .06em; text-transform: uppercase;
+  color: var(--accent); font-weight: 600; margin-bottom: 6px;
+}
+.context-note p { font-size: 13.5px; line-height: 1.55; color: var(--text-hi); margin: 0; }
+.context-src { font-size: 11px; color: var(--text-low); margin-top: 8px; }
+.context-src a { color: var(--text-mid); }
+.context-src a:hover { color: var(--accent); }
