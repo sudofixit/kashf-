@@ -5,7 +5,16 @@
   "map": {
     "corridor_id": "AIR_W1",
     "junction_id": null,
-    "route_anchors": [[55.344955, 25.251739], [55.334415, 25.257095]],
+    "route_anchors": [
+      [
+        55.344955,
+        25.251739
+      ],
+      [
+        55.334415,
+        25.257095
+      ]
+    ],
     "junction_point": null,
     "severity_color": "red"
   },
@@ -77,5 +86,20 @@
       "density": "high",
       "speed_factor": 0.78
     }
+  },
+  "annotations": {
+    "beats": [
+      "Morning rush crawls past Garhoud.",
+      "Airport Road full — no signal issue, volume only",
+      "5.2% of hours at gridlock."
+    ],
+    "after": "Add a lane: reduce per-kilometre delay, though at higher cost and disruption."
+  },
+  "plain": {
+    "headline": "Airport Road near Al Garhoud is failing: no signal issue, but capacity or incidents are choking it.",
+    "los_f": "At gridlock (LOS F) roughly 1 hour in every 19.",
+    "gap": "About 45 drivers every hour want this road but cannot fit.",
+    "vc": "Averages about 44% of its capacity, far higher at peaks.",
+    "verdict_after": "Top fix 'Capacity improvement on AIR_W1 (add a running lane)': indicative delay cut from 3.25 to 1.33 seconds per km (59% better), saturation drops from 0.833 to 0.666, but cost and disruption are high (4/5)."
   }
 }

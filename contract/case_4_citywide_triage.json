@@ -149,5 +149,13 @@
       "mean_vc": 0.282,
       "severity_color": "green"
     }
-  ]
+  ],
+  "annotations": {
+    "beats": [
+      "The network shows uneven strain",
+      "Four corridors tip into red severity",
+      "Al Mamzar fails 8.27% of hours"
+    ],
+    "after": "Four corridors remain at red severity"
+  }
 }

@@ -53,10 +53,16 @@
     "Data: RTA challenge dataset 2023–2025 (26,304 hrs × 18 corridors) · " +
     "Forecast & simulation outputs are indicative · Display routes adjusted to road geometry";
 
+  // Mandatory permanent disclosure for the Mapbox live-traffic base layer (Part A1).
+  const TRAFFIC_DISCLOSURE =
+    "Live conditions: Mapbox crowd data — our analysis uses the RTA dataset.";
+
+  // Metric cards: plain-English line (from contract.plain[plainKey]) is primary; the
+  // technical value + unit renders muted beneath it (Part D2).
   const METRICS = [
-    { key: "los_f_pct", label: "% hours at gridlock" },
-    { key: "demand_gap_vph", label: "unmet demand, veh/hr" },
-    { key: "mean_vc", label: "volume/capacity" }
+    { key: "los_f_pct", plainKey: "los_f", tech: (v) => `${v}% hours at LOS F` },
+    { key: "demand_gap_vph", plainKey: "gap", tech: (v) => `${v} veh/hr unmet demand` },
+    { key: "mean_vc", plainKey: "vc", tech: (v) => `${v} volume/capacity` }
   ];
 
   // Diagnosis badge styling by type.
@@ -133,6 +139,6 @@
 
   window.KashfData = {
     LOCATION_COORDS, JUNCTIONS, PULSE_JUNCTIONS, TAB_ORDER, DISCLOSURE_LINE,
-    METRICS, BADGES, DENSITY_DOTS, loadContract
+    TRAFFIC_DISCLOSURE, METRICS, BADGES, DENSITY_DOTS, loadContract
   };
 })();

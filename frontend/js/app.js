@@ -30,10 +30,31 @@
     if (errors.length) showErrorBanner(errors);
 
     buildTabs();
-    try { await window.KashfMap.init(cases); } catch (e) { console.warn("map init:", e); }
-
-    if (order.length) selectCase(order[0].case_id);
+    if (order.length) selectCase(order[0].case_id);   // render panel NOW — never wait on the map
     document.addEventListener("keydown", onKey);
+
+    // Map initialises in parallel and must never block the panel. When it's ready, draw the
+    // active case; if WebGL/network makes it hang, init resolves via its own timeout.
+    window.KashfMap.init(cases).then((res) => {
+      wireTrafficToggle();
+      if (res && res.ok && state.activeId) {
+        try { window.KashfMap.showCase(state.cases[state.activeId], state.flowState); } catch (e) { console.warn(e); }
+      }
+    }).catch((e) => console.warn("map init:", e));
+  }
+
+  // Live-traffic toggle + its permanent disclosure (only when the layer is available).
+  function wireTrafficToggle() {
+    const btn = document.getElementById("traffic-toggle");
+    const disc = document.getElementById("traffic-disclosure");
+    if (!window.KashfMap.isReady || !window.KashfMap.isReady() || !window.KashfMap.trafficAvailable()) return;
+    btn.hidden = false;
+    disc.textContent = D.TRAFFIC_DISCLOSURE;
+    btn.addEventListener("click", () => {
+      const on = btn.getAttribute("aria-pressed") !== "true";
+      btn.setAttribute("aria-pressed", on ? "true" : "false");
+      try { window.KashfMap.setTraffic(on); } catch (e) { console.warn(e); }
+    });
   }
 
   // ---- top bar -------------------------------------------------------------
@@ -115,12 +136,14 @@
       const hasFixes = c.simulate && Array.isArray(c.simulate.candidates) && c.simulate.candidates.length > 0;
       if (hasFixes) parts.push(renderFixes(c));
       parts.push(renderReco(c));
-      if (hasFixes) parts.push(renderToggle(c));
+      // Cases with a fix get a Before/After toggle; the storm gets a "Show response" toggle.
+      const hasToggle = hasFixes || c.case_id === "case_3_storm";
+      if (hasToggle) parts.push(renderToggle(c));
     }
 
     panel.innerHTML = parts.join("");
     if (isCitywide) wireTableSort(c);
-    if (!isCitywide && c.simulate && c.simulate.candidates.length > 0) wireToggle(c);
+    else if ((c.simulate && c.simulate.candidates.length > 0) || c.case_id === "case_3_storm") wireToggle(c);
   }
 
   function renderHeader(c, isCitywide) {
@@ -134,12 +157,16 @@
 
   function renderMetricRow(c) {
     const isStorm = c.case_id === "case_3_storm";
+    const plain = c.plain || {};
     const cards = D.METRICS.map((m) => {
       const val = c.triage[m.key];
       if (val === undefined) throw new Error("triage." + m.key + " missing");
-      const qual = isStorm ? `<div class="m-qual">storm-day</div>` : "";
-      return `<div class="metric"><div class="m-val tabular">${esc(val)}</div>
-                <div class="m-label">${esc(m.label)}</div>${qual}</div>`;
+      const primary = plain[m.plainKey];
+      if (primary === undefined) throw new Error("plain." + m.plainKey + " missing");
+      const qual = isStorm ? `<span class="m-qual"> · storm-day</span>` : "";
+      // Plain-English primary; technical value muted beneath (Part D2).
+      return `<div class="metric"><div class="m-plain">${esc(primary)}</div>
+                <div class="m-tech tabular">${esc(m.tech(val))}${qual}</div></div>`;
     }).join("");
     return `<div class="metric-row">${cards}</div>`;
   }
@@ -203,9 +230,11 @@
           <span>Disruption ${dots(Number(cand.disruption_score) || 0)}</span>
         </div></div>`;
     }).join("");
+    const verdict = (c.plain && c.plain.verdict_after)
+      ? `<div class="verdict-after">${esc(c.plain.verdict_after)}</div>` : "";
     const foot = c.simulate.method_label
       ? `<div class="method-footnote">${esc(c.simulate.method_label)}</div>` : "";
-    return `<div class="card"><div class="section-label">Tested fixes</div>${rows}${foot}</div>`;
+    return `<div class="card"><div class="section-label">Tested fixes</div>${rows}${verdict}${foot}</div>`;
   }
 
   function renderReco(c) {
@@ -214,26 +243,33 @@
       <p class="reco-text">${esc(c.rank.recommendation)}</p></div>`;
   }
 
+  function toggleHint(c, s) {
+    if (c.case_id === "case_3_storm") {
+      return s === "after"
+        ? "Operational response — patrols and diversions (no engineering fix applies here)."
+        : "Storm-day flow across the bridge — click 'Show response' for the actions.";
+    }
+    const blk = (c.flow_animation || {})[s] || {};
+    return `flow: ${blk.density || "—"} density, ${blk.speed_factor}× free-flow speed`;
+  }
+
   function renderToggle(c) {
-    const fa = c.flow_animation || { before: {}, after: {} };
-    const cap = (s) => {
-      const blk = fa[s] || {};
-      return `flow: ${esc(blk.density || "—")} density, ${esc(blk.speed_factor)}× free-flow speed`;
-    };
+    const storm = c.case_id === "case_3_storm";
+    const l0 = storm ? "Storm view" : "Before conditions";
+    const l1 = storm ? "Show response" : "After top fix";
     return `<div class="card">
-      <div class="section-label">Scenario flow</div>
+      <div class="section-label">${storm ? "Scenario" : "Scenario flow"}</div>
       <div class="toggle-wrap">
-        <div class="toggle" role="group" aria-label="Before/after">
-          <button type="button" data-flow="before" class="active">Before conditions</button>
-          <button type="button" data-flow="after">After top fix</button>
+        <div class="toggle" role="group" aria-label="${storm ? "Storm / response" : "Before / after"}">
+          <button type="button" data-flow="before" class="active">${esc(l0)}</button>
+          <button type="button" data-flow="after">${esc(l1)}</button>
         </div>
       </div>
-      <div class="toggle-hint" id="toggle-hint">${cap("before")}</div>
+      <div class="toggle-hint" id="toggle-hint">${esc(toggleHint(c, "before"))}</div>
     </div>`;
   }
 
   function wireToggle(c) {
-    const fa = c.flow_animation || { before: {}, after: {} };
     const hint = document.getElementById("toggle-hint");
     document.querySelectorAll('.toggle button[data-flow]').forEach((btn) => {
       btn.addEventListener("click", () => {
@@ -241,8 +277,7 @@
         state.flowState = s;
         document.querySelectorAll('.toggle button[data-flow]').forEach((b) =>
           b.classList.toggle("active", b === btn));
-        const blk = fa[s] || {};
-        hint.textContent = `flow: ${blk.density || "—"} density, ${blk.speed_factor}× free-flow speed`;
+        hint.textContent = toggleHint(c, s);
         try { window.KashfMap.setFlowState(c, s); } catch (e) { console.warn(e); }
       });
     });

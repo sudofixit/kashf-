@@ -29,6 +29,10 @@
     </div>
     <nav class="tabs" id="tabs" role="tablist" aria-label="Scenarios"></nav>
     <div class="topbar-right">
+      <button id="traffic-toggle" class="traffic-toggle" type="button" aria-pressed="true"
+              title="Toggle Mapbox live traffic base layer" hidden>
+        <span class="tt-dot"></span> Live traffic
+      </button>
       <span class="clock" id="clock" aria-label="Current time">--:--:--</span>
       <span class="status-pill" id="status-pill"></span>
     </div>
@@ -47,9 +51,13 @@
     <aside class="panel" id="panel" aria-live="polite"></aside>
   </main>
 
-  <footer class="bottom-strip" id="bottom-strip"></footer>
+  <footer class="bottom-strip">
+    <span id="bottom-strip"></span>
+    <span id="traffic-disclosure" class="traffic-disclosure"></span>
+  </footer>
 
   <script src="https://api.mapbox.com/mapbox-gl-js/v3.9.0/mapbox-gl.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@turf/turf@7.2.0/turf.min.js"></script>
   <script src="js/config.js"></script>
   <script src="js/data.js"></script>
   <script src="js/map.js"></script>

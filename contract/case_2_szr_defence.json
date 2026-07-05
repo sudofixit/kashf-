@@ -95,7 +95,31 @@
     "demand_gap_vph": 67.5,
     "mean_vc": 0.408,
     "pair_distance_km": 0.152,
-    "route_anchors": [[55.283953, 25.224351], [55.272668, 25.207789]],
+    "route_anchors": [
+      [
+        55.283953,
+        25.224351
+      ],
+      [
+        55.272668,
+        25.207789
+      ]
+    ],
     "_comment": "Opposite direction of the same interchange, tightest corridor-junction pair in the dataset — enables showing both directions converging on one stressed junction"
+  },
+  "annotations": {
+    "beats": [
+      "Traffic thickens near Defence interchange",
+      "Adaptive signal struggles to keep up",
+      "130 phase failures in three years"
+    ],
+    "after": "Demand management cuts saturation risk, not delay"
+  },
+  "plain": {
+    "headline": "Sheikh Zayed Road at 1st Interchange (Defence) is failing because demand exceeds its adaptive signal’s capacity, causing frequent gridlock.",
+    "los_f": "At gridlock (LOS F) roughly 1 hour in every 23.",
+    "gap": "About 65 drivers every hour want this road but cannot fit.",
+    "vc": "Averages about 43% of its capacity, far higher at peaks.",
+    "verdict_after": "Top fix 'Demand management on the JCT_DEF approach': delay 34.5s -> 33.1s (4% better), saturation vc 0.736 -> 0.662, cost 2/5, disruption 1/5. Indicative — main gain is fewer cars at risk of gridlock, not a noticeably faster road."
   }
 }

@@ -89,5 +89,20 @@
       "density": "high",
       "speed_factor": 0.78
     }
+  },
+  "annotations": {
+    "beats": [
+      "Morning queues stretch toward Sharjah",
+      "Signal cycles fail 315 times in three years",
+      "Gridlock hits 1 hour in every 12"
+    ],
+    "after": "Retime signal: 20% less delay, fewer cars stuck"
+  },
+  "plain": {
+    "headline": "Al Ittihad Road at Al Mamzar (Dubai–Sharjah border) is failing due to a fixed-time signal causing severe peak-hour gridlock.",
+    "los_f": "At gridlock (LOS F) roughly 1 hour in every 12.",
+    "gap": "About 118 drivers every hour want this road but cannot fit.",
+    "vc": "Averages about 50% of its capacity, far higher at peaks.",
+    "verdict_after": "Top fix 'Retime JCT_MAMZ within existing green bounds': indicative delay improves from 36.4 to 29.1 seconds per vehicle, saturation drops from 0.763 to 0.626, cost and disruption minimal (scores 1/5)."
   }
 }

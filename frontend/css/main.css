@@ -141,8 +141,8 @@ body {
   border-radius: 10px; padding: 16px;
 }
 
-/* Metric cards row */
-.metric-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+/* Metric cards — stacked (plain-English sentences need the full width). */
+.metric-row { display: grid; grid-template-columns: 1fr; gap: 10px; }
 .metric { background: var(--bg-2); border: 1px solid var(--border); border-radius: 10px; padding: 16px; }
 .metric .m-val { font-size: 22px; font-weight: 600; line-height: 1.1; }
 .metric .m-label { font-size: 13px; color: var(--text-mid); margin-top: 6px; }
@@ -239,6 +239,53 @@ body {
   padding: 10px 20px; font-size: 13px; font-weight: 500;
 }
 .error-banner ul { margin: 6px 0 0; padding-left: 18px; }
+
+/* ---------- Enhanced map: traffic toggle, cars, signal, annotations ---------- */
+.traffic-toggle {
+  appearance: none; background: var(--bg-2); border: 1px solid var(--border);
+  color: var(--text-mid); font: inherit; font-size: 13px; padding: 5px 10px;
+  border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;
+}
+.traffic-toggle .tt-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--text-low); }
+.traffic-toggle[aria-pressed="true"] { color: var(--text-hi); border-color: var(--accent); }
+.traffic-toggle[aria-pressed="true"] .tt-dot { background: var(--green); }
+.traffic-toggle:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.traffic-disclosure { color: var(--text-low); }
+.traffic-disclosure:not(:empty)::before { content: " · "; }
+
+/* Story/ambient cars — CSS triangle (points north at rotation 0); rotated to bearing. */
+.car {
+  width: 0; height: 0; border-style: solid; border-top-width: 0;
+  border-left-color: transparent; border-right-color: transparent;
+  pointer-events: none; will-change: transform;
+}
+/* Case-1 signal indicator at the junction point. */
+.signal-light {
+  width: 14px; height: 14px; border-radius: 50%; background: var(--red);
+  border: 2px solid #0B1220; box-shadow: 0 0 8px rgba(0,0,0,.6);
+}
+.incident-icon { font-size: 15px; line-height: 1; filter: drop-shadow(0 0 2px #000); pointer-events: none; }
+.patrol-icon { font-size: 17px; line-height: 1; filter: drop-shadow(0 0 2px #000); pointer-events: none; }
+
+/* Staged annotation cards anchored to map coords (Part C). */
+.annot-card {
+  background: var(--bg-2); border: 1px solid var(--border); border-radius: 8px;
+  padding: 8px 12px; max-width: 240px; font-size: 13px; color: var(--text-hi);
+  line-height: 1.4; box-shadow: 0 6px 18px rgba(0,0,0,.45); pointer-events: none;
+  opacity: 0; transform: translateY(6px); transition: opacity .4s ease, transform .4s ease;
+}
+.annot-card.show { opacity: 1; transform: translateY(0); }
+
+/* Plain-first metric cards (Part D2). */
+.metric .m-plain { font-size: 15px; color: var(--text-hi); line-height: 1.4; }
+.metric .m-tech { font-size: 12px; color: var(--text-low); margin-top: 6px; }
+
+/* Fixes card verdict line (Part D2). */
+.verdict-after {
+  margin-top: 12px; padding: 10px 12px; background: var(--accent-bg);
+  border-left: 3px solid var(--accent); border-radius: 6px;
+  font-size: 13px; color: var(--text-hi); line-height: 1.5;
+}
 
 /* ---------- Responsive (venue projector down to 1366×768) ---------- */
 @media (max-width: 1280px) {

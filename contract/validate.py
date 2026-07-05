@@ -132,6 +132,32 @@ def validate_file(path):
             if k not in sc:
                 errors.append(f"secondary_corridor missing key: {k}")
 
+    # ---- Enhanced-map fields (Part E): annotations (all cases) + plain (non-citywide) ----
+    ann = data.get("annotations")
+    if not isinstance(ann, dict):
+        errors.append("missing required field: annotations")
+    else:
+        beats = ann.get("beats")
+        if not (isinstance(beats, list) and len(beats) == 3
+                and all(isinstance(b, str) and b.strip() for b in beats)):
+            errors.append("annotations.beats must be exactly 3 non-empty strings")
+        if not (isinstance(ann.get("after"), str) and ann["after"].strip()):
+            errors.append("annotations.after must be a non-empty string")
+
+    if not is_citywide:
+        plain = data.get("plain")
+        if not isinstance(plain, dict):
+            errors.append("missing required field: plain")
+        else:
+            for k in ("headline", "los_f", "gap", "vc"):
+                if not (isinstance(plain.get(k), str) and plain[k].strip()):
+                    errors.append(f"plain.{k} must be a non-empty string")
+            cands = data.get("simulate", {}).get("candidates") or []
+            has_est = any(isinstance(c, dict) and c.get("before", {}).get("delay_s") is not None
+                          for c in cands)
+            if has_est and not (isinstance(plain.get("verdict_after"), str) and plain["verdict_after"].strip()):
+                errors.append("plain.verdict_after required (case has estimable simulate candidates)")
+
     placeholders = find_placeholders(data)
 
     # status consistency

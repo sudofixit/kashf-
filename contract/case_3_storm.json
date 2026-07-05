@@ -6,7 +6,16 @@
   "map": {
     "corridor_id": "MAK_N1",
     "junction_id": null,
-    "route_anchors": [[55.320805, 25.251252], [55.326906, 25.259271]],
+    "route_anchors": [
+      [
+        55.320805,
+        25.251252
+      ],
+      [
+        55.326906,
+        25.259271
+      ]
+    ],
     "junction_point": null,
     "severity_color": "red",
     "_comment": "Featured corridor MAK_N1 (Al Maktoum Bridge, D75, Bur Dubai) selected as the most storm-impacted of the task candidate set {SZR_N1, GAR_N1, MAK_N1, ITT_W1} — largest mean-speed collapse on 16 Apr 2024. A flood-prone bridge whose low storm-day vc but severe slowdown is a clean weather-incident signature; also diverse from the Case 1 flagship."
@@ -51,5 +60,19 @@
       "density": "low",
       "speed_factor": 0.92
     }
+  },
+  "annotations": {
+    "beats": [
+      "Rainfall peaked at 28.5 mm per hour.",
+      "Visibility dropped to 1 km.",
+      "Speed fell 49.7% at low demand."
+    ],
+    "after": "Pre-stage crews: cut storm response below 24.6 minutes"
+  },
+  "plain": {
+    "headline": "Storm on 16–17 April 2024 crippled Al Maktoum Bridge despite low traffic volumes.",
+    "los_f": "At gridlock (LOS F) roughly 1 hour in every 24.",
+    "gap": "About 357 drivers every hour want this road but cannot fit.",
+    "vc": "Averages about 38% of its capacity, far higher at peaks."
   }
 }
