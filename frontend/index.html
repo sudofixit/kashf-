@@ -9,6 +9,14 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
   <link href="https://api.mapbox.com/mapbox-gl-js/v3.9.0/mapbox-gl.css" rel="stylesheet" />
   <link rel="stylesheet" href="css/main.css" />
+  <!-- Mapbox PUBLIC token embedded for the GitHub Pages build (config.js is gitignored /
+       not deployed). Must run before all other scripts so window.KASHF_CONFIG exists;
+       a local js/config.js, if present, harmlessly overrides this for local dev. -->
+  <script>
+    window.KASHF_CONFIG = {
+      mapboxToken: "pk.eyJ1IjoibWFyd2FuNjciLCJhIjoiY21yN2d5bm1xMG5qZjJ5czlibzBsc3R0aCJ9.weDrfX_0q4lz3p_sgbSUfA"
+    };
+  </script>
 </head>
 <body>
   <!-- Contract-validation failures surface here (never a silent blank). -->
