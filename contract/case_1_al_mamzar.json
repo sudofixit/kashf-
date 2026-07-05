@@ -72,7 +72,31 @@
         "cost_score": 3,
         "disruption_score": 2,
         "_comment": "After-state models near-optimal green allocation (through green pushed toward its 66s max bound). High uncertainty / optimistic bound: the adaptive junction JCT_DEF at similar demand runs only ~5% lower delay than JCT_MAMZ and still logs 130 phase failures."
+      },
+      {
+        "fix": "Grade-separate / add a dedicated border-collector lane at the junction",
+        "before": {
+          "vc": 0.763,
+          "delay_s": 36.4
+        },
+        "after": {
+          "vc": 0.45,
+          "delay_s": 18.5
+        },
+        "cost_score": 5,
+        "disruption_score": 5,
+        "_comment": "Infrastructure option, added to make the build-vs-operate trade-off explicit. After-state is an optimistic bound; capex ~AED 40M is an order-of-magnitude estimate, not RTA-costed. Included so the appraisal can show that the largest delay improvement is not the best value."
       }
+    ]
+  },
+  "appraisal": {
+    "_purpose": "Indicative benefit-cost of each tested fix — answers whether it is worth BUILDING infrastructure or doing a cheaper operational fix. Benefit = value-of-time (AED 35/hr, mid of a published 25-45 range) x annual vehicle-hours saved (from the delay reduction and recovered demand above); weighed against capital + operating cost over a 15-year horizon. Method is standard transport economics; cost inputs are labelled engineering ESTIMATES, not RTA-costed.",
+    "method_label": "Indicative benefit-cost appraisal (assumptions labelled, not RTA-costed)",
+    "verdict": "Retiming the signal returns the most per dirham (benefit-cost ratio 23, payback under 3 months) and is nearly free. Upgrading to adaptive control is also strongly justified (BCR 7.9). Building a new lane is NOT justified - BCR 0.4, a 38-year payback - because the cheap operational fix already recovers most of the loss. The largest delay improvement is not the best value.",
+    "options": [
+      {"fix": "Retime signal within green bounds", "capex_aed": 80000, "bcr": 23.1, "payback_years": 0.2, "annual_benefit_aed": 354943, "annual_vehhours_saved": 10141, "verdict": "strongly justified", "is_infrastructure": false},
+      {"fix": "Upgrade to adaptive (SCOOT) control", "capex_aed": 600000, "bcr": 7.9, "payback_years": 1.0, "annual_benefit_aed": 631946, "annual_vehhours_saved": 18056, "verdict": "strongly justified", "is_infrastructure": false},
+      {"fix": "Add a dedicated border-collector lane", "capex_aed": 40000000, "bcr": 0.4, "payback_years": 37.8, "annual_benefit_aed": 1257035, "annual_vehhours_saved": 35915, "verdict": "not justified", "is_infrastructure": true}
     ]
   },
   "rank": {

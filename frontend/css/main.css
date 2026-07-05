@@ -292,3 +292,22 @@ body {
   .stage { grid-template-columns: 1fr 360px; }
   .subtitle { display: none; }
 }
+
+/* Economic appraisal — "is it worth building?" (build-vs-operate BCR) */
+.appraisal .appr-verdict-line { font-size: 14px; color: var(--text-hi); line-height: 1.55; margin: 0 0 14px; }
+.appr-table { display: flex; flex-direction: column; gap: 8px; }
+.appr-row { display: flex; justify-content: space-between; align-items: center; gap: 12px;
+  padding: 10px 12px; border-radius: 8px; background: var(--bg-1); border: 1px solid var(--border); }
+.appr-row.appr-yes { border-left: 3px solid var(--green); }
+.appr-row.appr-mid { border-left: 3px solid var(--amber); }
+.appr-row.appr-no  { border-left: 3px solid var(--red); }
+.appr-fix { font-size: 13px; color: var(--text-hi); font-weight: 500; }
+.appr-kind { font-size: 10px; letter-spacing: .06em; text-transform: uppercase; color: var(--text-low);
+  border: 1px solid var(--border); border-radius: 4px; padding: 1px 5px; margin-left: 8px; }
+.appr-nums { display: flex; align-items: center; gap: 12px; white-space: nowrap; }
+.appr-bcr { font-size: 15px; font-weight: 700; color: var(--text-hi); }
+.appr-row.appr-yes .appr-bcr { color: var(--green); }
+.appr-row.appr-no  .appr-bcr { color: var(--red); }
+.appr-pay { font-size: 12px; color: var(--text-mid); }
+.appr-verdict { font-size: 11px; letter-spacing: .03em; text-transform: uppercase; color: var(--text-low); }
+@media (max-width: 560px) { .appr-row { flex-direction: column; align-items: flex-start; gap: 8px; } }

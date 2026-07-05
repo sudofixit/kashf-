@@ -135,6 +135,7 @@
       parts.push(renderDiagnosis(c));
       const hasFixes = c.simulate && Array.isArray(c.simulate.candidates) && c.simulate.candidates.length > 0;
       if (hasFixes) parts.push(renderFixes(c));
+      if (c.appraisal && Array.isArray(c.appraisal.options)) parts.push(renderAppraisal(c));
       parts.push(renderReco(c));
       // Cases with a fix get a Before/After toggle; the storm gets a "Show response" toggle.
       const hasToggle = hasFixes || c.case_id === "case_3_storm";
@@ -235,6 +236,34 @@
     const foot = c.simulate.method_label
       ? `<div class="method-footnote">${esc(c.simulate.method_label)}</div>` : "";
     return `<div class="card"><div class="section-label">Tested fixes</div>${rows}${verdict}${foot}</div>`;
+  }
+
+  // ---- economic appraisal: is it worth building? --------------------------
+  function payLabel(y) {
+    if (y === null || y === undefined) return "—";
+    return y < 1 ? Math.round(y * 12) + " mo" : y + " yr";
+  }
+
+  function renderAppraisal(c) {
+    const a = c.appraisal;
+    if (!a || !Array.isArray(a.options)) return "";
+    const rows = a.options.map((o) => {
+      const cls = o.verdict === "not justified" ? "appr-no"
+        : Number(o.bcr) >= 4 ? "appr-yes" : "appr-mid";
+      const kind = o.is_infrastructure ? "build" : "operate";
+      return `<div class="appr-row ${cls}">
+        <div class="appr-fix">${esc(o.fix)}<span class="appr-kind">${kind}</span></div>
+        <div class="appr-nums tabular">
+          <span class="appr-bcr" title="Benefit–cost ratio">${esc(o.bcr)}×</span>
+          <span class="appr-pay">${esc(payLabel(o.payback_years))}</span>
+          <span class="appr-verdict">${esc(o.verdict)}</span>
+        </div></div>`;
+    }).join("");
+    const foot = a.method_label ? `<div class="method-footnote">${esc(a.method_label)}</div>` : "";
+    return `<div class="card appraisal">
+      <div class="section-label">Is it worth building?</div>
+      <p class="appr-verdict-line">${esc(a.verdict)}</p>
+      <div class="appr-table">${rows}</div>${foot}</div>`;
   }
 
   function renderReco(c) {
