@@ -20,31 +20,16 @@
   }
   const SEV_CLASS = { red: "sev-red", amber: "sev-amber", green: "sev-green" };
 
-  // Readable names so judges never see raw codes (JCT_MAMZ → "Al Mamzar Junction").
-  // Names come from the dataset's own location_name / junction_name fields.
-  const NAMES = {
-    ITT_W1: "Al Ittihad Rd @ Al Mamzar", ITT_E1: "Al Ittihad Rd @ Al Qiyadah",
-    AIR_W1: "Airport Rd @ Al Garhoud",
-    SZR_N1: "Sheikh Zayed Rd @ Defence", SZR_S1: "Sheikh Zayed Rd @ Defence (SB)",
-    SZR_N2: "Sheikh Zayed Rd @ DIFC", SZR_S2: "Sheikh Zayed Rd @ DIFC (SB)",
-    SZR_N4: "Sheikh Zayed Rd @ Mall of Emirates", SZR_S4: "Sheikh Zayed Rd @ Mall of Emirates (SB)",
-    EKR_N1: "Al Khail Rd @ Business Bay", EKR_S1: "Al Khail Rd @ Al Quoz",
-    MBZ_E1: "Mohammed Bin Zayed Rd @ DIP", EMR_E1: "Emirates Rd @ Al Awir",
-    GAR_N1: "Al Garhoud Bridge", MAK_N1: "Al Maktoum Bridge", BBC_S1: "Business Bay Crossing",
-    JBR_X1: "Jumeirah Beach Rd @ Jumeirah 1", DWC_X1: "Expo Rd @ Dubai South",
-    JCT_MAMZ: "Al Mamzar Junction", JCT_DEF: "Defence Roundabout", JCT_GARH: "Al Garhoud Junction",
-    JCT_DEIRA: "Deira / Al Ittihad Junction", JCT_SAFA: "Al Safa Junction", JCT_WASL: "Al Wasl Junction",
-    JCT_OUD: "Oud Metha Junction", JCT_QUOZ: "Al Quoz Junction", JCT_BARSHA: "Al Barsha Junction",
-    JCT_KARAMA: "Karama Junction"
-  };
-  const NAME_CODES = Object.keys(NAMES).sort((a, b) => b.length - a.length); // longest first
-  function humanize(s) {
-    let out = String(s);
-    for (const code of NAME_CODES) out = out.split(code).join(NAMES[code]);
-    return out;
+  // Translation is display-only, via KashfTranslate (js/translations.js).
+  const T = window.KashfTranslate;
+  function H(s) { return esc(T.text(s)); }           // humanize codes + terms, then escape
+  function nameOf(code) { return T.name(code); }
+  // Primary label convention: plain name + the technical id shown small/muted, once.
+  function nameWithCode(code) {
+    const n = T.name(code);
+    return n === code ? esc(code)
+      : `${esc(n)} <span class="code-ref">(${esc(code)})</span>`;
   }
-  function H(s) { return esc(humanize(s)); }        // humanize + HTML-escape for prose
-  function nameOf(code) { return NAMES[code] || code; }
 
   // ---- boot ----------------------------------------------------------------
   async function boot() {
@@ -128,6 +113,9 @@
     if (!caseData) return;
     state.activeId = caseId;
     state.flowState = "before";
+
+    // Tell the Ask Kashf drawer which case is now active (it resets its chat).
+    document.dispatchEvent(new CustomEvent("kashf:case", { detail: caseData }));
 
     document.querySelectorAll(".tab").forEach((t) =>
       t.classList.toggle("active", t.dataset.caseId === caseId));
@@ -351,6 +339,7 @@
       dir === "desc" ? y.los_f_pct - x.los_f_pct : x.los_f_pct - y.los_f_pct);
     const body = rows.map((r) => `<tr>
         <td class="l"><span class="sev-dot ${esc(r.severity_color)}"></span>${esc(nameOf(r.location_id))}</td>
+        <td class="l code-ref">${esc(r.location_id)}</td>
         <td class="l">${esc(r.area)}</td>
         <td class="val tabular">${esc(r.los_f_pct)}</td>
         <td class="val tabular">${esc(r.demand_gap_vph)}</td>
@@ -358,7 +347,7 @@
     const caret = dir === "desc" ? "▾" : "▴";
     return `<div class="card"><div class="section-label">Corridor triage — all 18</div>
       <table class="triage-table"><thead><tr>
-        <th class="l">Corridor</th><th class="l">Area</th>
+        <th class="l">Corridor</th><th class="l">Code</th><th class="l">Area</th>
         <th class="sortable" id="sort-losf" title="Share of hours at a standstill (Level of Service F — the worst traffic grade)">% gridlocked <span class="sort-caret">${caret}</span></th>
         <th title="Vehicles per hour that want the road but can't get through">Unmet demand</th>
       </tr></thead><tbody>${body}</tbody></table></div>`;
@@ -389,6 +378,9 @@
     el.innerHTML = `Render error in ${esc(caseData && caseData.case_id)} — ${esc(err && err.message)}`;
     el.hidden = false;
   }
+
+  // Minimal surface for the Ask Kashf drawer (js/chat.js).
+  window.KashfApp = { activeCase: () => state.cases[state.activeId] };
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
   else boot();

@@ -142,7 +142,7 @@
       map.getCanvas().style.cursor = "pointer";
       const p = e.features[0].properties;
       popup.setLngLat(e.features[0].geometry.coordinates).setHTML(
-        `<div class="map-tooltip"><div class="tt-id">${p.location_id}</div><div class="tt-area">${p.area}</div>
+        `<div class="map-tooltip"><div class="tt-id">${window.KashfTranslate.name(p.location_id)} <span class="tt-code">(${p.location_id})</span></div><div class="tt-area">${p.area}</div>
          <div class="tt-row">% hours at gridlock <b>${p.los_f_pct}</b></div>
          <div class="tt-row">unmet demand <b>${p.demand_gap_vph}</b></div></div>`).addTo(map);
     });
@@ -152,7 +152,7 @@
     D.JUNCTIONS.forEach((j) => {
       const el = document.createElement("div");
       el.className = "jct-marker" + (D.PULSE_JUNCTIONS.includes(j.id) ? " pulse" : "");
-      el.title = `${j.name} — ${j.control}`;
+      el.title = window.KashfTranslate.text(`${j.name} — ${j.control}`);
       junctionMarkers.push(new mapboxgl.Marker({ element: el }).setLngLat(j.coords).addTo(map));
     });
   }
