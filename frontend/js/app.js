@@ -20,8 +20,10 @@
   }
   const SEV_CLASS = { red: "sev-red", amber: "sev-amber", green: "sev-green" };
 
-  // Translation is display-only, via KashfTranslate (js/translations.js).
-  const T = window.KashfTranslate;
+  // Translation is display-only, via KashfTranslate (js/translations.js). Fall back to
+  // identity if it ever fails to load, so rendering never breaks.
+  const T = window.KashfTranslate ||
+    { text: (s) => String(s), name: (c) => c, term: (s) => s, diag: (t) => t };
   function H(s) { return esc(T.text(s)); }           // humanize codes + terms, then escape
   function nameOf(code) { return T.name(code); }
   // Primary label convention: plain name + the technical id shown small/muted, once.
