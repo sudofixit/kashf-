@@ -1,2 +1,2 @@
-# Local secret — Mapbox token lives here, never commit it.
+# Mapbox token lives here — kept out of git (GitHub secret scanning blocks the push).
 js/config.js

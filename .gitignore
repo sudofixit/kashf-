@@ -2,7 +2,7 @@
 .env
 **/.env
 contract/.env
-frontend/js/config.js          # Mapbox token (also ignored by frontend/.gitignore)
+frontend/js/config.js          # Mapbox token — kept out of git (GitHub secret scanning blocks it)
 
 # ==== Raw competition data & materials — must never go to GitHub ====
 # (Provided dataset, answer key, and challenge brief — not our work product.)
