@@ -1,0 +1,2 @@
+# Local secret — Mapbox token lives here, never commit it.
+js/config.js

@@ -1,0 +1,101 @@
+{
+  "case_id": "case_2_szr_defence",
+  "title": "Sheikh Zayed Road @ 1st Interchange (Defence)",
+  "status": "verified",
+  "map": {
+    "corridor_id": "SZR_N1",
+    "junction_id": "JCT_DEF",
+    "route_anchors": [
+      [
+        55.275898,
+        25.211992
+      ],
+      [
+        55.287122,
+        25.228347
+      ]
+    ],
+    "junction_point": [
+      55.2845,
+      25.2235
+    ],
+    "severity_color": "red",
+    "_comment": "route_anchors are CORRECTED DISPLAY anchors snapped to the SZR carriageway (verified for Mapbox rendering) — NOT the dataset monitoring coordinates for SZR_N1 (25.223 / 55.282). junction_point is the raw JCT_DEF coordinate from signal_junctions_reference.csv."
+  },
+  "triage": {
+    "rank": 4,
+    "los_f_pct": 4.39,
+    "demand_gap_vph": 64.9,
+    "mean_vc": 0.426,
+    "narrative": "Sheikh Zayed Road at 1st Interchange (Defence) is a severe congestion hotspot, with 4.39% of hours at gridlock (LOS F) and an average unmet demand of 64.9 vehicles per hour. The corridor operates at a mean volume-to-capacity ratio of 0.426, but the adaptive signal at JCT_DEF is stressed, showing 130 phase failures over three years, indicating demand is exceeding the signal's adaptive capacity despite its deployment."
+  },
+  "diagnosis": {
+    "type": "DEMAND_EXCEEDS_ADAPTIVE",
+    "summary": "This junction on Sheikh Zayed Road is experiencing demand that exceeds the capacity of its SCOOT-adaptive signal control, leading to frequent phase failures and severe congestion. The tight co-location of the corridor and junction (0.258 km) amplifies the impact, with evidence of 130 phase failures over the past three years supporting this diagnosis.",
+    "evidence": [
+      "SCOOT-adaptive signal control at JCT_DEF",
+      "130 phase failures over 3 years (2023-2025)",
+      "Corridor-junction pair distance 0.258 km"
+    ],
+    "confidence_pct": 75,
+    "_confidence_basis": "Deterministic: 40 + 15×n_supporting_signals − 10×indirect_link, clamped to 95. n=3 (severe congestion los_f 4.39%>4; co-located signal stressed 130 phase failures; tight co-location 0.258 km), indirect=1 (SCOOT-adaptive already deployed → the cause is demand exceeding adaptive capacity, a subtler attribution than a single fixable element) → 40+45−10=75.",
+    "human_review_required": false
+  },
+  "simulate": {
+    "method": "analytical_fallback",
+    "method_label": "Capacity-delay calculation (indicative, not micro-simulated)",
+    "_comment": "Diagnosis is DEMAND_EXCEEDS_ADAPTIVE, so candidates are demand-/capacity-side, NOT signal retiming (the signal is already adaptive). Before-state grounded in observed top-decile-saturation hours at JCT_DEF (deg_sat 0.736, avg delay 34.5 s/veh). Each candidate states its input assumption explicitly; the delay response is computed via HCM/Webster, not assumed. NOTE the honest result: at x<1 average delay is relatively insensitive, so both measures cut saturation (vc) much more than average delay — consistent with the diagnosis that the problem is saturation/phase-failure risk, not baseline delay. Scores on a 1-5 scale — cost: 1=config/software, 2=minor works/ops, 3=moderate capital, 4=significant capital (lane), 5=major infrastructure; disruption: 1=none/overnight, 2=minor/short closures, 3=peak-hour lane closures, 4=extended construction, 5=long-term major works.",
+    "candidates": [
+      {
+        "fix": "Demand management on the JCT_DEF approach (e.g. ramp metering / peak spreading; assumes a 10% peak-demand reduction)",
+        "before": {
+          "vc": 0.736,
+          "delay_s": 34.5
+        },
+        "after": {
+          "vc": 0.662,
+          "delay_s": 33.1
+        },
+        "cost_score": 2,
+        "disruption_score": 1
+      },
+      {
+        "fix": "Capacity improvement on the approach (add a running lane; assumes +20% approach capacity)",
+        "before": {
+          "vc": 0.736,
+          "delay_s": 34.5
+        },
+        "after": {
+          "vc": 0.613,
+          "delay_s": 32.1
+        },
+        "cost_score": 4,
+        "disruption_score": 4
+      }
+    ]
+  },
+  "rank": {
+    "recommendation": "Implement demand management on the JCT_DEF approach, such as ramp metering or peak spreading, as the top-ranked fix. This measure is indicative of reducing the degree of saturation from 0.736 to 0.662 and average delay from 34.5 to 33.1 seconds per vehicle, with low cost and minimal disruption. Human review is not required, but the indicative nature of these results should be noted.",
+    "top_fix": "Demand management on the JCT_DEF approach"
+  },
+  "flow_animation": {
+    "_comment": "Grounded in observed mean corridor speeds by Level-of-Service band for SZR_N1 (ff=105 kph): before = LOS-F band, after = LOS-D band. speed_factor = mean band speed / free-flow speed.",
+    "before": {
+      "density": "gridlock",
+      "speed_factor": 0.56
+    },
+    "after": {
+      "density": "high",
+      "speed_factor": 0.78
+    }
+  },
+  "secondary_corridor": {
+    "corridor_id": "SZR_S1",
+    "los_f_pct": 3.8,
+    "demand_gap_vph": 67.5,
+    "mean_vc": 0.408,
+    "pair_distance_km": 0.152,
+    "route_anchors": [[55.283953, 25.224351], [55.272668, 25.207789]],
+    "_comment": "Opposite direction of the same interchange, tightest corridor-junction pair in the dataset — enables showing both directions converging on one stressed junction"
+  }
+}

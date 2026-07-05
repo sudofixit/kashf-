@@ -1,0 +1,81 @@
+{
+  "case_id": "case_5_garhoud_no_signal",
+  "title": "Airport Road @ Al Garhoud — congested corridor, no attributable signal",
+  "status": "verified",
+  "map": {
+    "corridor_id": "AIR_W1",
+    "junction_id": null,
+    "route_anchors": [[55.344955, 25.251739], [55.334415, 25.257095]],
+    "junction_point": null,
+    "severity_color": "red"
+  },
+  "triage": {
+    "rank": 3,
+    "los_f_pct": 5.2,
+    "demand_gap_vph": 45.4,
+    "mean_vc": 0.444,
+    "narrative": "This corridor on Airport Road near Al Garhoud is severely congested, with 5.2% of hours at gridlock (LOS F) and an average unmet demand of 45.4 vehicles per hour. The mean volume-to-capacity ratio is 0.444, but the high los_f_pct indicates recurrent severe slowdowns, likely driven by capacity constraints or incidents rather than signal issues. The diagnosis rules out signal failures, as the nearest junction (0.99 km away) has had zero phase failures over three years."
+  },
+  "diagnosis": {
+    "type": "NO_SIGNAL_ATTRIBUTABLE",
+    "summary": "The congestion on Airport Road corridor (AIR_W1) is not attributable to signal failures, as evidenced by zero phase failures at the nearest junction (JCT_GARH) over the past three years. Instead, the issue appears to be capacity or incident-driven, with severe congestion (5.2% of hours at LOS F) and a demand gap of 45.4 vehicles per hour. The diagnosis confidence is 75%, based on deterministic analysis of signal distance and failure rates.",
+    "evidence": [
+      "Nearest junction JCT_GARH has 0 phase failures over 3 years (2023-2025)",
+      "JCT_GARH sits 0.99 km away from AIR_W1",
+      "Congestion is capacity/incident-driven, not signal-attributable"
+    ],
+    "confidence_pct": 75,
+    "_confidence_basis": "Deterministic: 40 + 15×n_supporting_signals − 10×indirect_link, clamped to 95. n=3 (congestion is real & severe los_f 5.20%>4; nearest signal JCT_GARH has 0 phase failures → signal ruled out; nearest signal distant 0.99 km), indirect=1 (negative diagnosis — the positive cause is capacity/incident-driven and is not precisely localized) → 40+45−10=75.",
+    "human_review_required": false
+  },
+  "simulate": {
+    "method": "analytical_fallback",
+    "method_label": "Capacity-delay calculation (indicative, not micro-simulated)",
+    "_comment": "No co-located signal, so delay is corridor travel delay via a BPR volume-delay function (α=0.15, β=4), NOT signal delay. delay_s is EXTRA travel time per km (s/km) vs free-flow (ff=80 kph, capacity 6000 vph). Before = observed p90 congested v/c (0.833). NOTE: BPR captures only recurrent capacity-driven congestion; the corridor's severe slowdowns are incident/weather-driven, which BPR does not model — hence candidate 2 below is left unestimated rather than invented. Scores on a 1-5 scale — cost: 1=config/software, 2=minor works/ops, 3=moderate capital, 4=significant capital (lane), 5=major infrastructure; disruption: 1=none/overnight, 2=minor/short closures, 3=peak-hour lane closures, 4=extended construction, 5=long-term major works.",
+    "candidates": [
+      {
+        "fix": "Capacity improvement on AIR_W1 (add a running lane; assumes +25% corridor capacity, 6000→7500 vph)",
+        "before": {
+          "vc": 0.833,
+          "delay_s": 3.25
+        },
+        "after": {
+          "vc": 0.666,
+          "delay_s": 1.33
+        },
+        "cost_score": 4,
+        "disruption_score": 4,
+        "_comment": "delay_s is per km (BPR). Recurrent-congestion relief only."
+      },
+      {
+        "fix": "Incident response improvement (faster clearance / hard-shoulder running)",
+        "before": {
+          "vc": null,
+          "delay_s": null
+        },
+        "after": {
+          "vc": null,
+          "delay_s": null
+        },
+        "cost_score": 2,
+        "disruption_score": 2,
+        "_not_estimable": "The analytical capacity-delay fallback cannot meaningfully estimate incident-clearance benefit — incident-driven delay is stochastic and not represented in the BPR curve. Left unestimated rather than invented; requires an incident/queue simulation not available in v1."
+      }
+    ]
+  },
+  "rank": {
+    "recommendation": "The top recommended fix is to add a running lane on AIR_W1 to improve corridor capacity, which is analytically estimated to reduce the degree of saturation from 0.833 to 0.666 and cut extra travel delay from 3.25 to 1.33 seconds per km. This is a high-cost, high-disruption option (cost score 4, disruption score 4) but offers indicative relief for recurrent congestion. Note that incident-driven delays remain unestimated and may require separate operational improvements, such as faster clearance or hard-shoulder running, which are not captured in this analytical model.",
+    "top_fix": "Capacity improvement on AIR_W1 (add a running lane)"
+  },
+  "flow_animation": {
+    "_comment": "Grounded in observed mean corridor speeds by Level-of-Service band for AIR_W1 (ff=80 kph): before = LOS-F band, after = LOS-D band. speed_factor = mean band speed / free-flow speed.",
+    "before": {
+      "density": "gridlock",
+      "speed_factor": 0.56
+    },
+    "after": {
+      "density": "high",
+      "speed_factor": 0.78
+    }
+  }
+}

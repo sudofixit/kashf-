@@ -1,0 +1,17 @@
+# ==== Secrets — NEVER commit ====
+.env
+**/.env
+contract/.env
+frontend/js/config.js          # Mapbox token (also ignored by frontend/.gitignore)
+
+# ==== Raw competition data & materials — must never go to GitHub ====
+# (Provided dataset, answer key, and challenge brief — not our work product.)
+CUD_RTA_Traffic_Dataset/
+CUD Student Challenge - Day 1.pdf
+
+# ==== Local tooling / editor ====
+.claude/
+
+# ==== OS / misc ====
+.DS_Store
+Thumbs.db

@@ -1,0 +1,55 @@
+{
+  "case_id": "case_3_storm",
+  "title": "Weather-driven congestion event — storm of 16–17 April 2024 (Al Maktoum Bridge, MAK_N1)",
+  "status": "verified",
+  "_date_context": "16-17 April 2024",
+  "map": {
+    "corridor_id": "MAK_N1",
+    "junction_id": null,
+    "route_anchors": [[55.320805, 25.251252], [55.326906, 25.259271]],
+    "junction_point": null,
+    "severity_color": "red",
+    "_comment": "Featured corridor MAK_N1 (Al Maktoum Bridge, D75, Bur Dubai) selected as the most storm-impacted of the task candidate set {SZR_N1, GAR_N1, MAK_N1, ITT_W1} — largest mean-speed collapse on 16 Apr 2024. A flood-prone bridge whose low storm-day vc but severe slowdown is a clean weather-incident signature; also diverse from the Case 1 flagship."
+  },
+  "triage": {
+    "rank": 4,
+    "los_f_pct": 4.17,
+    "demand_gap_vph": 357.0,
+    "mean_vc": 0.379,
+    "narrative": "On 16 April 2024, Al Maktoum Bridge (MAK_N1) experienced severe congestion with 4.17% of hours at gridlock (LOS F), despite a low mean volume-to-capacity ratio of 0.379. The corridor saw an average unmet demand of 357 vehicles per hour, but the 49.7% drop in mean speed (from 55.3 to 27.8 kph) at such low demand confirms this was a weather-driven incident, not a capacity issue.",
+    "_comment": "STORM-DAY values, 16 Apr 2024 only (24 hrs) — not 3-year means. rank = 4 of 18 by mean-speed collapse on the storm day (MAK_N1 −49.7%); it leads the task candidate set {SZR_N1, GAR_N1, MAK_N1, ITT_W1}, while three non-candidate leisure/outlier corridors (JBR_X1, DWC_X1, BBC_S1, all off a low demand base) dropped more."
+  },
+  "diagnosis": {
+    "type": "WEATHER_INCIDENT",
+    "summary": "This weather incident on Al Maktoum Bridge (MAK_N1) on 16–17 April 2024 was caused by heavy precipitation (200 mm total, peak 28.5 mm/h), reduced visibility, and a surge in incidents. The corridor’s mean speed collapsed by 49.7% while the volume-to-capacity ratio remained low (0.379), indicating congestion was due to weather, not demand. Incident response times doubled to 24.6 minutes during the storm window.",
+    "evidence": [
+      "MAK_N1 storm-day (16 Apr 2024) mean vc_ratio 0.379 while mean speed fell 49.7% (55.3→27.8 kph, min 8.1 kph) — severe slowdown at low v/c confirms congestion is weather- not demand-driven",
+      "Heavy precipitation 16–17 April 2024: 200 mm total (peak 28.5 mm/h), thunderstorm, visibility down to 1 km",
+      "Incident cluster during the storm window",
+      "Storm-window response time 24.6 min vs 9.7 min 3-year baseline (2.5x); 61 of 96 incidents on the first day"
+    ],
+    "confidence_pct": 55,
+    "human_review_required": true
+  },
+  "simulate": {
+    "method": "analytical_fallback",
+    "method_label": "Capacity-delay calculation (indicative, not micro-simulated)",
+    "_comment": "No fix candidates for a transient weather event — the response is operational (incident clearance, diversion, hard-shoulder running), not a capacity/signal intervention. candidates intentionally empty.",
+    "candidates": []
+  },
+  "rank": {
+    "recommendation": "No infrastructure or signal fixes are applicable for this transient weather event. Focus on operational responses: prioritize incident clearance, implement diversion plans, and consider hard-shoulder running during storms. Human review is required to validate these measures, as the diagnosis confidence is 55% and no estimable candidates exist for this case.",
+    "top_fix": null
+  },
+  "flow_animation": {
+    "_comment": "Storm-day vs normal observed mean speeds for MAK_N1 (ff=60 kph): before = 16 Apr 2024 storm day (mean 27.8 kph), after = normal non-storm 2024 baseline (mean 55.3 kph). speed_factor = mean speed / ff. Density reflects observed slow/jammed movement; note vc stayed LOW (0.379) — the weather signature is severe slowdown at low volume.",
+    "before": {
+      "density": "high",
+      "speed_factor": 0.46
+    },
+    "after": {
+      "density": "low",
+      "speed_factor": 0.92
+    }
+  }
+}

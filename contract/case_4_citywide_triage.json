@@ -1,0 +1,153 @@
+{
+  "case_id": "case_4_citywide_triage",
+  "title": "Citywide triage — all 18 corridors ranked by congestion severity",
+  "status": "verified",
+  "_method": "Computed fresh from traffic_volume_hourly 2023-2025 (26,304 hours per corridor). los_f_pct = count(level_of_service=='F')/N*100; demand_gap_vph = mean(demand_vph) − mean(volume_vph); mean_vc = mean(vc_ratio). severity_color: red if los_f_pct > 4, amber if 1-4, green if < 1. Cross-checked against verified spot values ITT_W1/ITT_E1/AIR_W1/SZR_N1/EKR_S1/EMR_E1 — all matched exactly.",
+  "narrative": "Citywide triage of 18 corridors shows 4 at red severity, 10 at amber, and 4 at green. The worst congestion is in Al Mamzar (ITT_W1) with 8.27% of hours at LOS F, followed by Al Qiyadah (ITT_E1) at 7.76% and Al Garhoud (AIR_W1) at 5.2%. Three corridors—DWC_X1, EMR_E1, and MBZ_E1—experienced no gridlock hours at all, with los_f_pct exactly 0.00.",
+  "triage_table": [
+    {
+      "location_id": "ITT_W1",
+      "area": "Al Mamzar",
+      "los_f_pct": 8.27,
+      "demand_gap_vph": 117.7,
+      "mean_vc": 0.498,
+      "severity_color": "red"
+    },
+    {
+      "location_id": "ITT_E1",
+      "area": "Al Qiyadah",
+      "los_f_pct": 7.76,
+      "demand_gap_vph": 101.6,
+      "mean_vc": 0.469,
+      "severity_color": "red"
+    },
+    {
+      "location_id": "AIR_W1",
+      "area": "Al Garhoud",
+      "los_f_pct": 5.2,
+      "demand_gap_vph": 45.4,
+      "mean_vc": 0.444,
+      "severity_color": "red"
+    },
+    {
+      "location_id": "SZR_N1",
+      "area": "Trade Centre",
+      "los_f_pct": 4.39,
+      "demand_gap_vph": 64.9,
+      "mean_vc": 0.426,
+      "severity_color": "red"
+    },
+    {
+      "location_id": "SZR_N2",
+      "area": "DIFC",
+      "los_f_pct": 3.88,
+      "demand_gap_vph": 53.7,
+      "mean_vc": 0.415,
+      "severity_color": "amber"
+    },
+    {
+      "location_id": "SZR_S1",
+      "area": "Trade Centre",
+      "los_f_pct": 3.8,
+      "demand_gap_vph": 67.5,
+      "mean_vc": 0.408,
+      "severity_color": "amber"
+    },
+    {
+      "location_id": "SZR_S2",
+      "area": "DIFC",
+      "los_f_pct": 3.46,
+      "demand_gap_vph": 60.2,
+      "mean_vc": 0.402,
+      "severity_color": "amber"
+    },
+    {
+      "location_id": "SZR_N4",
+      "area": "Al Barsha",
+      "los_f_pct": 2.86,
+      "demand_gap_vph": 31.7,
+      "mean_vc": 0.393,
+      "severity_color": "amber"
+    },
+    {
+      "location_id": "SZR_S4",
+      "area": "Al Barsha",
+      "los_f_pct": 2.63,
+      "demand_gap_vph": 50.8,
+      "mean_vc": 0.386,
+      "severity_color": "amber"
+    },
+    {
+      "location_id": "GAR_N1",
+      "area": "Garhoud",
+      "los_f_pct": 2.19,
+      "demand_gap_vph": 24.3,
+      "mean_vc": 0.437,
+      "severity_color": "amber"
+    },
+    {
+      "location_id": "EKR_N1",
+      "area": "Business Bay",
+      "los_f_pct": 1.77,
+      "demand_gap_vph": 11.1,
+      "mean_vc": 0.367,
+      "severity_color": "amber"
+    },
+    {
+      "location_id": "MAK_N1",
+      "area": "Bur Dubai",
+      "los_f_pct": 1.6,
+      "demand_gap_vph": 18.1,
+      "mean_vc": 0.423,
+      "severity_color": "amber"
+    },
+    {
+      "location_id": "JBR_X1",
+      "area": "Jumeirah",
+      "los_f_pct": 1.51,
+      "demand_gap_vph": 7.8,
+      "mean_vc": 0.353,
+      "severity_color": "amber"
+    },
+    {
+      "location_id": "EKR_S1",
+      "area": "Al Quoz",
+      "los_f_pct": 1.21,
+      "demand_gap_vph": 24.2,
+      "mean_vc": 0.355,
+      "severity_color": "amber"
+    },
+    {
+      "location_id": "BBC_S1",
+      "area": "Business Bay",
+      "los_f_pct": 0.94,
+      "demand_gap_vph": 19.2,
+      "mean_vc": 0.402,
+      "severity_color": "green"
+    },
+    {
+      "location_id": "DWC_X1",
+      "area": "Dubai South",
+      "los_f_pct": 0.0,
+      "demand_gap_vph": 0.9,
+      "mean_vc": 0.18,
+      "severity_color": "green"
+    },
+    {
+      "location_id": "EMR_E1",
+      "area": "Al Awir",
+      "los_f_pct": 0.0,
+      "demand_gap_vph": 0.9,
+      "mean_vc": 0.248,
+      "severity_color": "green"
+    },
+    {
+      "location_id": "MBZ_E1",
+      "area": "DIP",
+      "los_f_pct": 0.0,
+      "demand_gap_vph": 1.8,
+      "mean_vc": 0.282,
+      "severity_color": "green"
+    }
+  ]
+}

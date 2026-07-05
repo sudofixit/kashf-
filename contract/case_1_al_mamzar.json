@@ -1,0 +1,93 @@
+{
+  "case_id": "case_1_al_mamzar",
+  "title": "Al Ittihad Road @ Al Mamzar (Dubai–Sharjah border)",
+  "status": "verified",
+  "map": {
+    "corridor_id": "ITT_W1",
+    "junction_id": "JCT_MAMZ",
+    "route_anchors": [
+      [
+        55.338,
+        25.268
+      ],
+      [
+        55.355,
+        25.295
+      ]
+    ],
+    "junction_point": [
+      55.35,
+      25.294
+    ],
+    "severity_color": "red"
+  },
+  "triage": {
+    "rank": 1,
+    "los_f_pct": 8.27,
+    "demand_gap_vph": 117.7,
+    "mean_vc": 0.498,
+    "narrative": "Al Ittihad Road at Al Mamzar (Dubai–Sharjah border) is the RTA’s worst-performing corridor-junction pair, with 8.27% of hours at gridlock (LOS F) and an unmet demand of 117.7 vehicles per hour. The mean volume-to-capacity ratio of 0.498 masks severe peak-hour oversaturation, as the junction logs 315 phase failures in three years—the highest of any signal in the network."
+  },
+  "diagnosis": {
+    "type": "SIGNAL_ISSUE",
+    "summary": "The problem is a fixed-time signal at JCT_MAMZ, which is failing 315 times in three years and creating a demand gap of 117.7 vph. The junction is only 0.515 km from the corridor, so its failures directly gridlock the border-bound lanes of Al Ittihad Road.",
+    "evidence": [
+      "Fixed-time signal control at JCT_MAMZ",
+      "315 phase failures over 3 years (2023-2025) — worst of 10 junctions",
+      "Demand gap 117.7 vph (mean demand_vph − mean volume_vph over 26,304 hours)",
+      "Corridor-junction pair distance 0.515 km"
+    ],
+    "confidence_pct": 95,
+    "_confidence_basis": "Deterministic: 40 + 15×n_supporting_signals − 10×indirect_link, clamped to 95. n=4 (severe congestion los_f 8.27%>4; worst-stressed co-located signal 315 phase failures; tight co-location 0.515 km; Fixed-time = directly retimable cause), indirect=0 → 40+60=100 → clamp 95.",
+    "human_review_required": false
+  },
+  "simulate": {
+    "method": "analytical_fallback",
+    "method_label": "Capacity-delay calculation (indicative, not micro-simulated)",
+    "_comment": "Before-state grounded in observed top-decile-saturation hours at JCT_MAMZ (deg_sat 0.763, avg delay 36.4 s/veh; AM-Peak program C=140s, through green 41s). vc = junction degree of saturation (the quantity the fix changes; distinct from the corridor's 3-yr mean_vc). After-delay via HCM/Webster control delay recomputed at the reallocated green split, scaled from the observed before value by the formula ratio. Indicative, not micro-simulated. Scores on a 1-5 scale — cost: 1=config/software, 2=minor works/ops, 3=moderate capital (detectors/controller), 4=significant capital (lane), 5=major infrastructure; disruption: 1=none/overnight, 2=minor/short closures, 3=peak-hour lane closures, 4=extended construction, 5=long-term major works.",
+    "candidates": [
+      {
+        "fix": "Retime JCT_MAMZ within existing green bounds (reallocate green from the left-turn phases to the critical through movement, cycle length unchanged)",
+        "before": {
+          "vc": 0.763,
+          "delay_s": 36.4
+        },
+        "after": {
+          "vc": 0.626,
+          "delay_s": 29.1
+        },
+        "cost_score": 1,
+        "disruption_score": 1
+      },
+      {
+        "fix": "Upgrade JCT_MAMZ from Fixed-time to adaptive (SCOOT) control",
+        "before": {
+          "vc": 0.763,
+          "delay_s": 36.4
+        },
+        "after": {
+          "vc": 0.521,
+          "delay_s": 22.8
+        },
+        "cost_score": 3,
+        "disruption_score": 2,
+        "_comment": "After-state models near-optimal green allocation (through green pushed toward its 66s max bound). High uncertainty / optimistic bound: the adaptive junction JCT_DEF at similar demand runs only ~5% lower delay than JCT_MAMZ and still logs 130 phase failures."
+      }
+    ]
+  },
+  "rank": {
+    "recommendation": "Retime JCT_MAMZ within its existing green bounds, shifting time from left-turn phases to the critical through movement. Indicative results: junction delay drops from 36.4 to 29.1 seconds per vehicle, and degree of saturation improves from 0.763 to 0.626. Cost and disruption are minimal (scores 1/1).",
+    "top_fix": "Retime JCT_MAMZ within existing green bounds"
+  },
+  "flow_animation": {
+    "_comment": "Grounded in observed mean corridor speeds by Level-of-Service band for ITT_W1 (ff=80 kph): before = LOS-F band (worst recurring peak), after = LOS-D band (target after the top fix). speed_factor = mean band speed / free-flow speed.",
+    "before": {
+      "density": "gridlock",
+      "speed_factor": 0.56
+    },
+    "after": {
+      "density": "high",
+      "speed_factor": 0.78
+    }
+  }
+}

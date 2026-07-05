@@ -1,0 +1,57 @@
+{
+  "$schema_version": "1.0",
+  "_purpose": "Reference schema for Kashf demo case-study files. Frontend renders this shape; backend fills it. Every case_*.json file conforms to this structure. Fields marked 'Mistral-generated' or PLACEHOLDER do not exist yet and carry placeholder strings until the backend produces them; a file is 'partial' until then, 'verified' once filled.",
+  "_value_kinds": {
+    "verified": "Computed from the real 2023-2025 dataset in prior verification passes. Present as exact numbers.",
+    "placeholder": "Mistral narrative / Simulate output not yet produced. Carries a string that starts with 'PLACEHOLDER:' so it is never mistaken for a real value."
+  },
+  "case_id": "string — stable id, e.g. 'case_1_al_mamzar'.",
+  "title": "string — human-readable case title.",
+  "status": "'partial' | 'verified' — 'partial' while any Mistral/Simulate placeholder remains; flips to 'verified' only when the backend fills them all.",
+  "map": {
+    "corridor_id": "string — traffic location_id (locations_reference.csv), e.g. 'ITT_W1'.",
+    "junction_id": "string | null — signal junction_id (signal_junctions_reference.csv), or null when no signal is attributable.",
+    "route_anchors": "[[lng, lat], [lng, lat]] — two [lng, lat] points defining the rendered corridor polyline.",
+    "junction_point": "[lng, lat] | null — marker for the co-located junction, or null.",
+    "severity_color": "'red' | 'amber' | 'green' — from los_f_pct thresholds: red > 4, amber 1-4, green < 1."
+  },
+  "triage": {
+    "rank": "int — corridor rank by severity (1 = worst).",
+    "los_f_pct": "float — % of hours at Level of Service F, count(level_of_service=='F')/N*100.",
+    "demand_gap_vph": "float — mean(demand_vph) - mean(volume_vph) over all hours.",
+    "mean_vc": "float — mean vc_ratio over all hours.",
+    "narrative": "string (Mistral-generated) — plain-language triage summary."
+  },
+  "diagnosis": {
+    "type": "string — cause class, e.g. SIGNAL_ISSUE, DEMAND_EXCEEDS_ADAPTIVE, WEATHER_INCIDENT, NO_SIGNAL_ATTRIBUTABLE.",
+    "summary": "string (Mistral-generated) — plain-language diagnosis.",
+    "evidence": "[string] — computed facts supporting the diagnosis (NOT generated).",
+    "confidence_pct": "int — diagnosis confidence 0-100.",
+    "human_review_required": "bool — true when the diagnosis needs a human to confirm."
+  },
+  "simulate": {
+    "method": "'analytical_fallback' — the only supported v1 method.",
+    "method_label": "'Capacity-delay calculation (indicative, not micro-simulated)' — shown verbatim in the UI to signal the model is indicative.",
+    "candidates": [
+      {
+        "fix": "string — candidate intervention description.",
+        "before": {"vc": "float", "delay_s": "float"},
+        "after": {"vc": "float", "delay_s": "float"},
+        "cost_score": "int — relative cost (higher = costlier).",
+        "disruption_score": "int — relative disruption to build (higher = more disruptive)."
+      }
+    ]
+  },
+  "rank": {
+    "recommendation": "string (Mistral-generated) — recommended action and rationale.",
+    "top_fix": "string — the chosen candidate fix."
+  },
+  "flow_animation": {
+    "before": {"density": "string — 'low'|'medium'|'high'|'gridlock'", "speed_factor": "float — 0-1 multiplier of free-flow speed"},
+    "after": {"density": "string", "speed_factor": "float"}
+  },
+  "_optional_blocks": {
+    "secondary_corridor": "Case 2 only. {corridor_id, los_f_pct, demand_gap_vph, mean_vc, pair_distance_km, _comment, route_anchors} for the opposite direction of the same interchange.",
+    "triage_table": "Case 4 (citywide) only. Replaces the single-corridor body with an array of all 18 corridors: [{location_id, area, los_f_pct, demand_gap_vph, mean_vc, severity_color}]."
+  }
+}
