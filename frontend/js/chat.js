@@ -18,13 +18,13 @@
 
   // Suggested-question chips per case (static, plain-English).
   const CHIPS = {
-    case_1_al_mamzar: ["Why retime instead of adding a lane?", "What is a phase failure?", "How confident are you?"],
-    case_2_szr_defence: ["What's the root cause here?", "Is a smart signal enough?", "How sure are you?"],
-    case_3_storm: ["What happened during the storm?", "Why is there no engineering fix?", "What did the response do?"],
-    case_4_citywide_triage: ["Which corridor is worst?", "How is severity measured?", "What does gridlock mean?"],
-    case_5_garhoud_no_signal: ["Why can't a signal fix this?", "What's the recommendation?", "How confident are you?"]
+    case_1_al_mamzar: ["Why retiming over lane addition?", "Explain phase failures.", "What is the confidence basis?"],
+    case_2_szr_defence: ["What is the root cause?", "Is adaptive signalling sufficient?", "What is the confidence basis?"],
+    case_3_storm: ["What caused the April 2024 disruption?", "Why is there no engineering fix?", "What did the operational response achieve?"],
+    case_4_citywide_triage: ["Which corridor has highest severity?", "How is the severity index calculated?", "Define LOS F."],
+    case_5_garhoud_no_signal: ["Why is signalling not the solution?", "What is the recommendation?", "What is the confidence basis?"]
   };
-  const DEFAULT_CHIPS = ["What's the root cause here?", "What do you recommend?", "How sure are you?"];
+  const DEFAULT_CHIPS = ["What is the root cause?", "What is the recommendation?", "What is the confidence basis?"];
 
   // ---- glossary handed to the model so it uses plain names/terms --------------
   function glossary() {
@@ -75,12 +75,12 @@
     drawer.innerHTML =
       '<header class="akd-head"><div><div class="akd-title">Ask Kashf</div>'
       + '<div class="akd-sub" id="akd-case"></div></div>'
-      + '<div class="akd-tag">Live Mistral reasoning</div>'
+      + '<div class="akd-tag">AI traffic analyst</div>'
       + '<button class="akd-x" id="akd-x" type="button" aria-label="Close">&times;</button></header>'
       + '<div class="akd-msgs" id="akd-msgs"></div>'
       + '<div class="akd-chips" id="akd-chips"></div>'
       + '<form class="akd-foot" id="akd-form"><input id="akd-input" type="text" '
-      + 'placeholder="Ask about this case..." autocomplete="off" />'
+      + 'placeholder="Enter your question..." autocomplete="off" />'
       + '<button id="akd-send" type="submit" aria-label="Send">Send</button></form>';
     document.body.appendChild(drawer);
 
@@ -122,14 +122,14 @@
     const title = T.text(c.title || c.case_id || "");
     titleEl.textContent = title;
     msgEl.innerHTML = "";
-    addSystemNote("Now discussing: " + title);
+    addSystemNote("Active case: " + title);
     if (!KEY) {
-      addSystemNote("Live chat available in the presented demo — the input is disabled in this public build.");
+      addSystemNote("Live chat is enabled in the presented demo only. This public build has no active key.");
       inputEl.disabled = true; sendBtn.disabled = true;
-      inputEl.placeholder = "Chat disabled (no key in this build)";
+      inputEl.placeholder = "Chat unavailable: no API key configured";
     } else {
       inputEl.disabled = false; sendBtn.disabled = false;
-      inputEl.placeholder = "Ask about this case...";
+      inputEl.placeholder = "Enter your question...";
     }
     renderChips((CHIPS[c.case_id] || DEFAULT_CHIPS));
   }
@@ -191,8 +191,8 @@
     } catch (err) {
       tip.remove();
       const msg = err && err.message === "timeout"
-        ? "Kashf is taking too long — please try again."
-        : "Kashf couldn't answer just now — please try again.";
+        ? "Request timed out. Please try again."
+        : "Response unavailable. Please try again.";
       addBubble("kashf", msg);
       console.warn("Ask Kashf error:", err);
     } finally {

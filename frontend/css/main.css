@@ -15,6 +15,8 @@
   --amber-bg: rgba(245,158,11,.12);
   --green-bg: rgba(34,197,94,.12);
   --accent-bg: rgba(59,130,246,.12);
+  --sans: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
 }
 
 * { box-sizing: border-box; }
@@ -22,7 +24,7 @@ html, body { height: 100%; margin: 0; }
 body {
   background: var(--bg-0);
   color: var(--text-hi);
-  font-family: "Inter", system-ui, -apple-system, sans-serif;
+  font-family: var(--sans);
   font-size: 15px;
   font-weight: 400;
   line-height: 1.5;
@@ -30,14 +32,20 @@ body {
   display: grid;
   grid-template-rows: 56px 1fr 40px;   /* top bar · stage · bottom strip */
 }
-.tabular { font-variant-numeric: tabular-nums; }
+.tabular { font-variant-numeric: tabular-nums; font-family: var(--mono); }
 .section-label {
-  font-size: 11px;
-  letter-spacing: 0.08em;
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: 0.11em;
   text-transform: uppercase;
-  color: var(--text-low);
-  font-weight: 600;
-  margin: 0 0 10px 0;
+  color: var(--text-mid);
+  font-weight: 500;
+  margin: 0 0 12px 0;
+  display: flex; align-items: center; gap: 8px;
+}
+.section-label::before {
+  content: ""; width: 5px; height: 5px; border-radius: 1px;
+  background: var(--accent); flex: none;
 }
 
 /* ---------- Top bar ---------- */
@@ -138,13 +146,13 @@ body {
 
 .card {
   background: var(--bg-2); border: 1px solid var(--border);
-  border-radius: 10px; padding: 16px;
+  border-radius: 8px; padding: 16px;
 }
 
 /* Metric cards — stacked (plain-English sentences need the full width). */
 .metric-row { display: grid; grid-template-columns: 1fr; gap: 10px; }
-.metric { background: var(--bg-2); border: 1px solid var(--border); border-radius: 10px; padding: 16px; }
-.metric .m-val { font-size: 22px; font-weight: 600; line-height: 1.1; }
+.metric { background: var(--bg-2); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; }
+.metric .m-val { font-family: var(--mono); font-size: 22px; font-weight: 600; line-height: 1.1; }
 .metric .m-label { font-size: 13px; color: var(--text-mid); margin-top: 6px; }
 .metric .m-qual { font-size: 11px; color: var(--text-low); letter-spacing: .04em; }
 .metric.highlight { border-color: var(--accent); }
@@ -313,9 +321,8 @@ body {
 @media (max-width: 560px) { .appr-row { flex-direction: column; align-items: flex-start; gap: 8px; } }
 
 /* ============ Ask Kashf — translation code-ref + chat drawer ============ */
-.code-ref { font-size: 11px; color: var(--text-low); font-weight: 400; }
-td.code-ref { font-family: inherit; }
-.tt-code { color: var(--text-low); font-size: 11px; }
+.code-ref { font-family: var(--mono); font-size: 11px; color: var(--text-low); font-weight: 400; }
+.tt-code { font-family: var(--mono); color: var(--text-low); font-size: 11px; }
 
 /* floating action button */
 #ask-kashf-fab {
@@ -341,13 +348,16 @@ td.code-ref { font-family: inherit; }
   display: flex; align-items: flex-start; gap: 12px;
   padding: 14px 16px; border-bottom: 1px solid var(--border);
 }
-.akd-title { font-size: 15px; font-weight: 600; color: var(--text-hi); }
-.akd-sub { font-size: 12px; color: var(--text-mid); margin-top: 3px; }
+.akd-title { font-size: 15px; font-weight: 600; color: var(--text-hi); letter-spacing: -0.01em; }
+.akd-sub { font-family: var(--mono); font-size: 11px; color: var(--text-mid); margin-top: 4px; }
 .akd-tag {
-  margin-left: auto; font-size: 10px; letter-spacing: .04em; text-transform: uppercase;
-  color: var(--accent); background: var(--accent-bg); border: 1px solid var(--border);
-  padding: 3px 7px; border-radius: 5px; white-space: nowrap;
+  margin-left: auto; font-family: var(--mono); font-size: 9.5px; letter-spacing: .08em;
+  text-transform: uppercase; color: var(--accent); background: var(--accent-bg);
+  border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
+  padding: 3px 7px; border-radius: 4px; white-space: nowrap;
 }
+.akd-chip { font-family: var(--sans); }
+.akd-note { font-family: var(--mono); font-size: 11px; }
 .akd-x {
   background: none; border: none; color: var(--text-mid); font-size: 22px; line-height: 1;
   cursor: pointer; padding: 0 2px;

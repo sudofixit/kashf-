@@ -51,7 +51,7 @@
   // Bottom strip — the three permanent honesty disclosures, from config not HTML.
   const DISCLOSURE_LINE =
     "Data: RTA challenge dataset 2023–2025 (26,304 hrs × 18 corridors) · " +
-    "Forecast & simulation outputs are indicative · Display routes adjusted to road geometry";
+    "Forecast and simulation outputs are indicative · Display routes follow road geometry";
 
   // Mandatory permanent disclosure for the Mapbox live-traffic base layer (Part A1).
   const TRAFFIC_DISCLOSURE =
