@@ -123,7 +123,7 @@
     const order = [];
     const errors = [];
     for (const tab of TAB_ORDER) {
-      const url = "../contract/" + tab.file;
+      const url = "../backend/contract/" + tab.file;
       try {
         const res = await fetch(url, { cache: "no-store" });
         if (!res.ok) throw new Error("HTTP " + res.status);
