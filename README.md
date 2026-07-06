@@ -66,6 +66,7 @@ Since this is a static frontend driven by local JSON contracts, no build step is
 - **Contract-driven, not hardcoded** — every number, badge, and label on screen comes from `contract/*.json`. If a required field is missing, the UI raises a visible error banner rather than silently showing a blank.
 - **Honest by default** — the console never overstates what the model can do: non-estimable fix candidates are shown (not hidden), forecasts are labeled indicative, and a permanent footer discloses the data source and its limitations.
 - **Resilient on demo day** — network failures (e.g. the routing API) fall back gracefully to schematic lines rather than breaking the page, and all five scenarios are validated on load.
+- **Mistral** — This was the main AI assistant used throughout the making of this project.
 
 See [`kashf_frontend_build_spec.md`](./kashf_frontend_build_spec.md) for the full design system, layout, and interaction specification, and [`salik_sense_problem_solution_phases.md`](./salik_sense_problem_solution_phases.md) for the problem/solution background.
 
