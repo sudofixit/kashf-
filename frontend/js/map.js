@@ -13,6 +13,7 @@
 (function () {
   "use strict";
   const D = window.KashfData;
+  const T = window.KashfTranslate;   // display-only plain-English layer
   const SEV_HEX = { red: "#EF4444", amber: "#F59E0B", green: "#22C55E" };
   const GRAY = "#7C89A0";
   const AMBIENT_PER_SEG = 3;   // 3-5 per segment; 3 keeps us well under the cap
@@ -141,8 +142,10 @@
     map.on("mousemove", "corridor-pins", (e) => {
       map.getCanvas().style.cursor = "pointer";
       const p = e.features[0].properties;
+      // English name primary; raw ID kept small + muted (judges can still cross-reference).
       popup.setLngLat(e.features[0].geometry.coordinates).setHTML(
-        `<div class="map-tooltip"><div class="tt-id">${p.location_id}</div><div class="tt-area">${p.area}</div>
+        `<div class="map-tooltip"><div class="tt-name">${T.name(p.location_id)}</div>
+         <div class="tt-id">${p.location_id} · ${p.area}</div>
          <div class="tt-row">% hours at gridlock <b>${p.los_f_pct}</b></div>
          <div class="tt-row">unmet demand <b>${p.demand_gap_vph}</b></div></div>`).addTo(map);
     });
@@ -152,7 +155,7 @@
     D.JUNCTIONS.forEach((j) => {
       const el = document.createElement("div");
       el.className = "jct-marker" + (D.PULSE_JUNCTIONS.includes(j.id) ? " pulse" : "");
-      el.title = `${j.name} — ${j.control}`;
+      el.title = `${j.name} (${j.id}) — ${T.term(j.control)}`;
       junctionMarkers.push(new mapboxgl.Marker({ element: el }).setLngLat(j.coords).addTo(map));
     });
   }
@@ -445,7 +448,7 @@
   }
   function addAnnotation(coord, text) {
     if (!coord) return;
-    const el = document.createElement("div"); el.className = "annot-card"; el.textContent = text;
+    const el = document.createElement("div"); el.className = "annot-card"; el.textContent = T.text(text);
     const m = new mapboxgl.Marker({ element: el, anchor: "bottom" }).setLngLat(coord).addTo(map);
     requestAnimationFrame(() => el.classList.add("show"));
     annMarkers.push(m);

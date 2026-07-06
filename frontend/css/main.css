@@ -100,7 +100,8 @@ body {
   padding: 12px; font-size: 13px; color: var(--text-hi); min-width: 170px;
   box-shadow: 0 6px 20px rgba(0,0,0,.35);
 }
-.map-tooltip .tt-id { font-weight: 600; }
+.map-tooltip .tt-name { font-weight: 600; color: var(--text-hi); line-height: 1.35; }
+.map-tooltip .tt-id { color: var(--text-low); font-size: 11px; margin: 2px 0 6px; letter-spacing: .02em; }
 .map-tooltip .tt-area { color: var(--text-mid); margin-bottom: 6px; }
 .map-tooltip .tt-row { display: flex; justify-content: space-between; gap: 16px; color: var(--text-mid); }
 .map-tooltip .tt-row b { color: var(--text-hi); font-weight: 500; }
@@ -219,6 +220,8 @@ body {
 .triage-table td { padding: 6px 6px; border-bottom: 1px solid var(--border); color: var(--text-mid); }
 .triage-table td.val { text-align: right; color: var(--text-hi); }
 .triage-table tr:last-child td { border-bottom: none; }
+/* Narrow muted ID column — data reference beside the plain-English corridor name. */
+.triage-table .id-col { color: var(--text-low); font-size: 11px; width: 1%; white-space: nowrap; letter-spacing: .02em; }
 .sev-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 8px; vertical-align: middle; }
 .sev-dot.red { background: var(--red); }
 .sev-dot.amber { background: var(--amber); }

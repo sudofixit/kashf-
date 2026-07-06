@@ -6,6 +6,7 @@
 (function () {
   "use strict";
   const D = window.KashfData;
+  const T = window.KashfTranslate;   // display-only plain-English layer (contract keeps the IDs)
 
   const state = {
     cases: {}, order: [], activeId: null,
@@ -150,9 +151,10 @@
     let badge = "";
     if (!isCitywide) {
       const b = D.BADGES[c.diagnosis.type];
-      badge = b ? `<span class="badge ${b.cls}">${esc(b.text)}</span>` : "";
+      // Short badge label; the full plain-English diagnosis rides along as its tooltip.
+      badge = b ? `<span class="badge ${b.cls}" title="${esc(T.diag(c.diagnosis.type))}">${esc(b.text)}</span>` : "";
     }
-    return `<div class="case-header"><h1 class="case-title">${esc(c.title)}</h1>${badge}</div>`;
+    return `<div class="case-header"><h1 class="case-title">${esc(T.text(c.title))}</h1>${badge}</div>`;
   }
 
   function renderMetricRow(c) {
@@ -164,8 +166,9 @@
       const primary = plain[m.plainKey];
       if (primary === undefined) throw new Error("plain." + m.plainKey + " missing");
       const qual = isStorm ? `<span class="m-qual"> · storm-day</span>` : "";
-      // Plain-English primary; technical value muted beneath (Part D2).
-      return `<div class="metric"><div class="m-plain">${esc(primary)}</div>
+      // Plain-English primary (translated); technical value stays muted beneath (Part D2 —
+      // the muted tech line is the precision layer and is left untranslated by design).
+      return `<div class="metric"><div class="m-plain">${esc(T.text(primary))}</div>
                 <div class="m-tech tabular">${esc(m.tech(val))}${qual}</div></div>`;
     }).join("");
     return `<div class="metric-row">${cards}</div>`;
@@ -176,12 +179,12 @@
     if (!dg || dg.summary === undefined) throw new Error("diagnosis.summary missing");
     const sevClass = SEV_CLASS[c.map.severity_color] || "sev-accent";
     const evClass = c.diagnosis.type === "WEATHER_INCIDENT" ? "sev-accent" : sevClass;
-    const evidence = dg.evidence.map((e) => `<div class="ev ${evClass}">${esc(e)}</div>`).join("");
+    const evidence = dg.evidence.map((e) => `<div class="ev ${evClass}">${esc(T.text(e))}</div>`).join("");
     const review = dg.human_review_required
       ? `<span class="review-pill">Human review required</span>` : "";
     return `<div class="card">
       <div class="section-label">Diagnosis</div>
-      <p class="diag-summary">${esc(dg.summary)}</p>
+      <p class="diag-summary">${esc(T.text(dg.summary))}</p>
       <div class="evidence">${evidence}</div>
       <div class="confidence">
         <div class="conf-track"><div class="conf-fill" style="width:${Number(dg.confidence_pct)}%"></div></div>
@@ -215,13 +218,13 @@
         const cls = dPct < 0 ? "good" : dPct > 0 ? "bad" : "neutral";
         delta = `<span class="fix-delta ${cls} tabular">${dPct > 0 ? "+" : ""}${dPct}% delay</span>`;
         metrics = `<div class="fix-metrics tabular">
-            <span>vc <b>${esc(b.vc)}</b><span class="arrow">→</span><b>${esc(a.vc)}</b></span>
+            <span>fullness <b>${esc(b.vc)}</b><span class="arrow">→</span><b>${esc(a.vc)}</b></span>
             <span>delay <b>${esc(b.delay_s)}s</b><span class="arrow">→</span><b>${esc(a.delay_s)}s</b></span>
           </div>`;
       }
       return `<div class="fix ${rec ? "recommended" : ""} ${notEst ? "not-estimable" : ""}">
         <div class="fix-head">
-          <span class="fix-name">${esc(cand.fix)}</span>
+          <span class="fix-name">${esc(T.text(cand.fix))}</span>
           ${rec ? '<span class="fix-rec-label">Recommended</span>' : delta}
         </div>
         ${metrics}${note}
@@ -231,7 +234,7 @@
         </div></div>`;
     }).join("");
     const verdict = (c.plain && c.plain.verdict_after)
-      ? `<div class="verdict-after">${esc(c.plain.verdict_after)}</div>` : "";
+      ? `<div class="verdict-after">${esc(T.text(c.plain.verdict_after))}</div>` : "";
     const foot = c.simulate.method_label
       ? `<div class="method-footnote">${esc(c.simulate.method_label)}</div>` : "";
     return `<div class="card"><div class="section-label">Tested fixes</div>${rows}${verdict}${foot}</div>`;
@@ -240,7 +243,7 @@
   function renderReco(c) {
     if (!c.rank || c.rank.recommendation === undefined) throw new Error("rank.recommendation missing");
     return `<div class="card reco"><div class="section-label">Recommendation</div>
-      <p class="reco-text">${esc(c.rank.recommendation)}</p></div>`;
+      <p class="reco-text">${esc(T.text(c.rank.recommendation))}</p></div>`;
   }
 
   function toggleHint(c, s) {
@@ -287,7 +290,7 @@
   function renderOverview(c) {
     if (c.narrative === undefined) throw new Error("narrative missing");
     return `<div class="card"><div class="section-label">Citywide summary</div>
-      <p class="overview-text">${esc(c.narrative)}</p></div>`;
+      <p class="overview-text">${esc(T.text(c.narrative))}</p></div>`;
   }
 
   function renderTable(c) {
@@ -295,15 +298,17 @@
     const rows = c.triage_table.slice().sort((x, y) =>
       dir === "desc" ? y.los_f_pct - x.los_f_pct : x.los_f_pct - y.los_f_pct);
     const body = rows.map((r) => `<tr>
-        <td class="l"><span class="sev-dot ${esc(r.severity_color)}"></span>${esc(r.location_id)}</td>
+        <td class="l"><span class="sev-dot ${esc(r.severity_color)}"></span>${esc(T.name(r.location_id))}</td>
+        <td class="l id-col">${esc(r.location_id)}</td>
         <td class="l">${esc(r.area)}</td>
         <td class="val tabular">${esc(r.los_f_pct)}</td>
         <td class="val tabular">${esc(r.demand_gap_vph)}</td>
       </tr>`).join("");
     const caret = dir === "desc" ? "▾" : "▴";
+    // English name is the primary column; the raw ID stays as a narrow muted data column.
     return `<div class="card"><div class="section-label">Corridor triage — all 18</div>
       <table class="triage-table"><thead><tr>
-        <th class="l">Corridor</th><th class="l">Area</th>
+        <th class="l">Corridor</th><th class="l id-col">ID</th><th class="l">Area</th>
         <th class="sortable" id="sort-losf">% LOS F <span class="sort-caret">${caret}</span></th>
         <th>Gap vph</th>
       </tr></thead><tbody>${body}</tbody></table></div>`;
