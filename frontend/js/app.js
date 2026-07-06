@@ -11,8 +11,15 @@
   const state = {
     cases: {}, order: [], activeId: null,
     flowState: "before",
-    sort: { key: "los_f_pct", dir: "desc" }
+    sort: { key: "los_f_pct", dir: "desc" },
+    // Per-case operator decision (APPROVED / MODIFIED / REJECTED). Keyed by case_id so
+    // each case is independent yet its decision persists when you switch back to it.
+    approvals: {}
   };
+
+  // Human-in-the-loop audit trail. In-memory only (resets on page refresh), accumulates
+  // across case switches, and exposed globally so it is inspectable in DevTools.
+  window.KashfAuditLog = window.KashfAuditLog || [];
 
   // ---- tiny DOM helpers ----------------------------------------------------
   function esc(s) {
@@ -144,7 +151,10 @@
 
     panel.innerHTML = parts.join("");
     if (isCitywide) wireTableSort(c);
-    else if ((c.simulate && c.simulate.candidates.length > 0) || c.case_id === "case_3_storm") wireToggle(c);
+    else {
+      if ((c.simulate && c.simulate.candidates.length > 0) || c.case_id === "case_3_storm") wireToggle(c);
+      wireApproval(c);   // human-in-the-loop controls live in the recommendation card
+    }
   }
 
   function renderHeader(c, isCitywide) {
@@ -242,8 +252,141 @@
 
   function renderReco(c) {
     if (!c.rank || c.rank.recommendation === undefined) throw new Error("rank.recommendation missing");
-    return `<div class="card reco"><div class="section-label">Recommendation</div>
-      <p class="reco-text">${esc(T.text(c.rank.recommendation))}</p></div>`;
+    const verified = c.status === "verified";
+    const dec = state.approvals[c.case_id] || null;   // this case's prior decision, if any
+    const acted = !!dec;
+    const isMod = acted && dec.action === "MODIFIED";
+
+    // Recommendation text: the operator's edit (verbatim) if modified, else the contract text.
+    const recoHtml = isMod ? esc(dec.modified) : esc(T.text(c.rank.recommendation));
+    const modTag = isMod ? ` <span class="reco-mod-tag">(Modified)</span>` : "";
+
+    const dis = (acted || !verified) ? "disabled" : "";
+    const aCls = acted && dec.action === "APPROVED" ? " is-active" : "";
+    const mCls = isMod ? " is-active" : "";
+    const rCls = acted && dec.action === "REJECTED" ? " is-active" : "";
+    const aLabel = acted && dec.action === "APPROVED" ? "Approved ✓" : "✓ Approve";
+    const mLabel = isMod ? "Modified ✎" : "✎ Modify";
+    const rLabel = acted && dec.action === "REJECTED" ? "Rejected ✗" : "✗ Reject";
+
+    let statusLine = "";
+    if (!verified) {
+      // Demo-proof: unverified ("partial") cases cannot be approved at all.
+      statusLine = `<div class="appr-gate">Recommendation pending verification</div>`;
+    } else if (acted && dec.action === "APPROVED") {
+      statusLine = `<div class="appr-timestamp">Approved at ${esc(dec.displayTime)}</div>`;
+    }
+    const rejectedCls = acted && dec.action === "REJECTED" ? " rejected" : "";
+
+    return `<div class="card reco${rejectedCls}" id="reco-card">
+      <div class="section-label">Recommendation</div>
+      <div class="reco-decision-zone">
+        <div class="reco-dimmable">
+          <p class="reco-text">${recoHtml}${modTag}</p>
+          <div class="approval-actions">
+            <button type="button" class="appr-btn appr-approve${aCls}" data-appr="approve" ${dis}>${aLabel}</button>
+            <button type="button" class="appr-btn appr-modify${mCls}" data-appr="modify" ${dis}>${mLabel}</button>
+            <button type="button" class="appr-btn appr-reject${rCls}" data-appr="reject" ${dis}>${rLabel}</button>
+          </div>
+          <div class="approval-modify" id="approval-modify" hidden>
+            <textarea class="approval-textarea" id="approval-textarea" rows="4"
+              aria-label="Modified recommendation"></textarea>
+            <button type="button" class="appr-submit" id="approval-submit">Submit modification</button>
+          </div>
+          ${statusLine}
+        </div>
+        <div class="reco-reject-overlay"><span>Rejected — pending review</span></div>
+      </div>
+      <div class="audit-section">
+        <span class="audit-link" id="audit-link" role="button" tabindex="0">View audit log</span>
+        <div class="audit-viewer" id="audit-viewer" hidden></div>
+      </div></div>`;
+  }
+
+  // ---- human-in-the-loop approval ------------------------------------------
+  function pad2(n) { return String(n).padStart(2, "0"); }
+  function fmtClock(d) { return `${pad2(d.getHours())}:${pad2(d.getMinutes())}:${pad2(d.getSeconds())}`; }
+
+  // Record a terminal decision: write the audit entry, store per-case state, re-render.
+  function commitDecision(c, action, modifiedText) {
+    if (state.approvals[c.case_id]) return;               // no double-deciding
+    const now = new Date();
+    const iso = now.toISOString();
+    let entry;
+    if (action === "APPROVED") {
+      entry = { case_id: c.case_id, action: "APPROVED", timestamp: iso, recommendation: c.rank.top_fix };
+    } else if (action === "REJECTED") {
+      entry = { case_id: c.case_id, action: "REJECTED", timestamp: iso };
+    } else if (action === "MODIFIED") {
+      entry = { case_id: c.case_id, action: "MODIFIED", original: c.rank.recommendation, modified: modifiedText, timestamp: iso };
+    } else { return; }
+
+    window.KashfAuditLog.push(entry);
+    console.log("[Kashf audit]", entry);                  // visible in DevTools during the demo
+
+    state.approvals[c.case_id] = {
+      action, timestamp: iso, displayTime: fmtClock(now),
+      modified: action === "MODIFIED" ? modifiedText : null
+    };
+    try { renderPanel(c); } catch (err) { showRenderError(c, err); }
+  }
+
+  function renderAuditViewer() {
+    const log = window.KashfAuditLog;
+    if (!log.length) return `<div class="audit-empty">No decisions logged yet.</div>`;
+    return log.map((e) => {
+      let fix = "—";
+      if (e.action === "APPROVED") fix = e.recommendation || "—";
+      else if (e.action === "MODIFIED") fix = e.modified || "—";
+      return `<div class="audit-row">
+        <span class="audit-time tabular">${esc(fmtClock(new Date(e.timestamp)))}</span><span class="audit-sep">·</span>
+        <span class="audit-case">${esc(e.case_id)}</span><span class="audit-sep">·</span>
+        <span class="audit-action ${esc(e.action)}">${esc(e.action)}</span><span class="audit-sep">·</span>
+        <span class="audit-fix">${esc(fix)}</span>
+      </div>`;
+    }).join("");
+  }
+
+  function wireApproval(c) {
+    const card = document.getElementById("reco-card");
+    if (!card) return;
+
+    const modBox = document.getElementById("approval-modify");
+    const ta = document.getElementById("approval-textarea");
+    if (ta) ta.value = c.rank.recommendation;             // pre-fill with the current recommendation
+
+    card.querySelectorAll("button[data-appr]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const act = btn.dataset.appr;
+        if (act === "approve") commitDecision(c, "APPROVED");
+        else if (act === "reject") commitDecision(c, "REJECTED");
+        else if (act === "modify" && modBox) {            // non-terminal: reveal the inline editor
+          modBox.hidden = !modBox.hidden;
+          if (!modBox.hidden && ta) ta.focus();
+        }
+      });
+    });
+
+    const submit = document.getElementById("approval-submit");
+    if (submit) submit.addEventListener("click", () => {
+      const val = ta ? ta.value.trim() : "";
+      if (!val) { if (ta) ta.focus(); return; }
+      commitDecision(c, "MODIFIED", val);
+    });
+
+    const link = document.getElementById("audit-link");
+    const viewer = document.getElementById("audit-viewer");
+    if (link && viewer) {
+      const toggle = () => {
+        viewer.hidden = !viewer.hidden;
+        if (!viewer.hidden) viewer.innerHTML = renderAuditViewer();
+        link.textContent = viewer.hidden ? "View audit log" : "Hide audit log";
+      };
+      link.addEventListener("click", toggle);
+      link.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggle(); }
+      });
+    }
   }
 
   function toggleHint(c, s) {

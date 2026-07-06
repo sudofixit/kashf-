@@ -195,6 +195,70 @@ body {
 /* Recommendation card */
 .reco { border-left: 3px solid var(--accent); }
 .reco-text { font-size: 15px; line-height: 1.6; margin: 0; color: var(--text-hi); }
+.reco-mod-tag { font-size: 12px; font-weight: 400; color: var(--text-low); }
+
+/* ---------- Human-in-the-loop approval ---------- */
+.reco-decision-zone { position: relative; }
+/* On reject, the recommendation + controls dim; the overlay label stays crisp above them. */
+.reco.rejected .reco-dimmable { opacity: .4; pointer-events: none; }
+.reco-reject-overlay { display: none; position: absolute; inset: 0; align-items: center; justify-content: center; }
+.reco.rejected .reco-reject-overlay { display: flex; }
+.reco-reject-overlay span {
+  font-size: 13px; font-weight: 600; padding: 6px 14px; border-radius: 8px;
+  background: var(--red-bg); color: var(--red); border: 1px solid var(--red);
+}
+
+.approval-actions { display: flex; gap: 8px; margin-top: 14px; }
+.appr-btn {
+  appearance: none; flex: 1; cursor: pointer; font: inherit; font-size: 13px; font-weight: 500;
+  padding: 9px 10px; border-radius: 8px; border: 1px solid var(--border);
+  background: var(--bg-1); color: var(--text-mid);
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px; white-space: nowrap;
+  transition: background .15s ease, color .15s ease, border-color .15s ease;
+}
+.appr-approve:hover:not(:disabled) { border-color: var(--green); color: var(--green); }
+.appr-modify:hover:not(:disabled)  { border-color: var(--amber); color: var(--amber); }
+.appr-reject:hover:not(:disabled)  { border-color: var(--red);   color: var(--red); }
+.appr-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.appr-btn:disabled { cursor: default; }
+.appr-btn:disabled:not(.is-active) { opacity: .45; }
+/* Solid, committed states. */
+.appr-approve.is-active { background: var(--green); border-color: var(--green); color: #06210F; }
+.appr-modify.is-active  { background: var(--amber); border-color: var(--amber); color: #241800; }
+.appr-reject.is-active  { background: var(--red);   border-color: var(--red);   color: #2A0A0A; }
+
+.appr-timestamp { font-size: 12px; color: var(--text-low); margin-top: 8px; }
+.appr-gate { font-size: 12px; color: var(--text-low); margin-top: 10px; }
+
+/* Inline modify editor (not a modal). */
+.approval-modify { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
+.approval-textarea {
+  width: 100%; background: var(--bg-1); border: 1px solid var(--border); border-radius: 8px;
+  color: var(--text-hi); font: inherit; font-size: 13px; line-height: 1.5; padding: 10px;
+  resize: vertical; min-height: 84px;
+}
+.approval-textarea:focus-visible { outline: none; border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-bg); }
+.appr-submit {
+  appearance: none; align-self: flex-start; cursor: pointer; font: inherit; font-size: 13px; font-weight: 500;
+  padding: 8px 14px; border-radius: 8px; border: 1px solid var(--accent);
+  background: var(--accent); color: #fff;
+}
+.appr-submit:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* Audit-log section + inline viewer. */
+.audit-section { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--border); }
+.audit-link { font-size: 13px; color: var(--accent); cursor: pointer; user-select: none; }
+.audit-link:hover { text-decoration: underline; }
+.audit-link:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+.audit-viewer { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
+.audit-row { display: flex; flex-wrap: wrap; gap: 6px; align-items: baseline; font-size: 12px; color: var(--text-mid); line-height: 1.4; }
+.audit-time, .audit-sep { color: var(--text-low); }
+.audit-action { font-weight: 600; }
+.audit-action.APPROVED { color: var(--green); }
+.audit-action.MODIFIED { color: var(--amber); }
+.audit-action.REJECTED { color: var(--red); }
+.audit-fix { flex: 1 1 100%; color: var(--text-mid); }
+.audit-empty { font-size: 12px; color: var(--text-low); }
 
 /* Before/after toggle */
 .toggle { display: inline-flex; background: var(--bg-2); border: 1px solid var(--border); border-radius: 8px; padding: 3px; gap: 3px; }
